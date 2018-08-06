@@ -1,0 +1,28 @@
+{
+    "SocketServer":"192.168.1.120",
+    "SocketPort":"9002",
+    "ProtoFile":"protocol_proto_proto",
+    "ProtoConfig":"protocol_config_json",
+    "ServerConfig":"server_config_json",
+    "UsePlatform":"",
+<<<<<<< .mine
+    "ServerID":1610,
+    "account":"mytest101",
+||||||| .r40957
+    "ServerID":1610,
+    "account":"mytest77",
+=======
+    "ServerID":120,
+    "account":"mytest1",
+>>>>>>> .r40977
+    "flyMaxDis":896,
+    "flySpeedRate":2,
+    "flyInterval":3,
+    "flyGhostTime":30,
+    "netType":0,
+    "bGotoSDK":0,
+    "platform":0,
+    "bRelease":0,
+    "version":1.0,
+    "bWSS":0
+}

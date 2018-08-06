@@ -1,0 +1,6920 @@
+
+
+//错误码
+//package pb_error;
+
+enum eErrorCode
+{
+	//成功
+	ecSuccess = 0;			    	// 操作成功
+	ecFail = -1;			    	// 操作失败
+	
+	//LoginServer(-10 ~ -100)
+	ecPasswdError = -10;    		// 密码错误
+	ecNoAccount = -11;	    		// 没有这个账号
+	ecIsOnline = -12;     			// 已经在线，如果已经在线，客户端应该在1秒后重试登陆
+	ecServerBusy = -13;     		// 服务器忙
+	ecServerClose = -14;    		// 服务器没有开放 
+	ecSessionServerError = -15;		// session服务器有问题，比如db没有连接好
+	ecServerNotExisting = -16;		// 不存在这个服务器
+	ecFcmLimited = -17;				// 账户纳入防沉迷
+	ecCoinNotEnough = -18;			// 铜钱不够
+	ecYuanbaoNotEnough = -19;		// 元宝不够
+	ecItemNotEnough = -20;			// 道具不够
+	
+	//GameServer
+	//通用失败消息(-301 ~ -1000)
+	ecAccountNotLogin = -301;		// 玩家没有登录
+	ecActorNotExist = -302;			// 角色不存在
+	ecSexError = -303;				// 性别错误
+	ecJobError = -304;				// 职业错误
+
+	//其它失败消息(-1001 ~ )
+	ecSelectActorFail = -1001;		// 选择角色失败
+	ecSameActorName = -1002;		// 角色名称重复
+	ecNameUseup = -1003;			// 角色名称已用完
+	ecNameIllegal = -1004;			// 名称中包含非法字符或长度不合法
+	ecMaxBagEnlargeTime = -1005;	// 背包扩展次数已经满了
+	
+	ecMountSysNotOpen = -1006;		// 坐骑系统未开启
+	ecPetSysNotOpen = -1007;		// 宠物系统未开启
+	ecWingSysNotOpen = -1008;		// 翅膀系统未开启
+	ecFabaoSysNotOpen = -1009;		// 法宝系统未开启
+	ecShenbingSysNotOpen = -1010;	// 神兵系统未开启
+	ecZhanjiaSysNotOpen = -1011;	// 战甲系统未开启
+	ecXianqiSysNotOpen = -1018;		// 仙器系统未开启	
+	ecYingzongSysNotOpen = -1020;	// 影踪系统未开启
+};
+
+
+
+// 登录服务器协议 1-100
+
+//package pb_ls;
+
+// 发送登录请求到服务端
+// id = 1
+message c2s_login
+{
+	optional string account = 1;		//帐号名
+	optional string password = 2;		//密码
+	optional int32 server_id = 3;		//服务器
+}
+
+// 下发登录结果到客户端
+// id = 2
+message s2c_login
+{
+	optional sint32 result = 1;			//登录结果（登录成功时后面字段才有值）
+	optional int32 account_id = 2;		//帐号id
+	optional string sv_ip = 3;			//服务器ip
+	optional int32 sv_port = 4;			//服务器port
+	optional string last_ip = 5;		//上次登录ip
+	optional string ticket = 6;			//入场券（登录GameServer用）
+}
+
+// 游戏服务器协议 - 通用定义
+
+// //package pb_gs_common; // 被//import后再用//package会报错
+
+/*
+// 性别
+enum eSex
+{
+	enMale = 0;			    //男
+	enFemale = 1;			//女
+}
+
+// 职业
+enum eJob
+{
+	enJob1 = 0;				// 职业1
+	enJob2 = 1;				// 职业2
+}	
+
+// 致死
+enum DeadFlag
+{
+	deDeadNone	= 0 ;	//没有触发致死
+	deDeadApper	= 1 ;	//触发了致死
+};
+
+*/
+
+//属性描述						属性id		数据类型
+//等级 							1			int32;
+//当前血量 						2			int32;
+//最大血量 						3			int32;
+//移动速度 						4			int32;
+//攻击 							5			int32;
+//防御 							6			int32;
+//命中 							7			int32;
+//暴击 							8			int32;
+//闪避 							9			int32;
+//抗暴 							10			int32;
+//伤害加深 						11			int32;
+//伤害减免 						12			int32;
+//暴击加深 						13			int32;
+//暴击减免 						14			int32;
+//翅膀模型id 					15			int32;
+//实体模型id(衣服模型id)		16			int32;
+//武器模型id 					17			int32;
+//性别 							18			int32;
+//职业 							19			int32;
+//经验 							20			uint64;
+//当前等级最大的经验 			21			uint64;
+//非绑定金钱 					22			uint32;
+//非绑定元宝					23			uint32;
+//战斗力						24			int32;
+//icon id						25			int32;
+//声望							26			int32;
+//法宝模id						27			int32;
+//宠物id						28			int32;
+//称号id						29			int32;
+//vip等级						30			int32;
+//宠物模型id					31			int32;
+//影踪模型id					32			int32;
+//爱心值						33			uint32;
+//天下第一武道会积分(武魂点数)	34			int32;
+//称号id2						35			int32;
+//称号id3						36			int32;
+
+// 属性
+//属性1
+message attribute_int
+{
+	optional int32 attribute_id	= 1; //属性id
+	optional int32 value 		= 2; //数值
+}
+
+//属性2
+message attribute_uint
+{
+	optional int32 attribute_id	= 1; //属性id
+	optional uint32 value 		= 2; //数值
+}
+
+//属性3
+message attribute_int64
+{
+	optional int32 attribute_id	= 1; //属性id
+	optional int64 value 		= 2; //数值
+}
+
+//属性4
+message attribute_uint64
+{
+	optional int32 attribute_id	= 1; //属性id
+	optional uint64 value 		= 2; //数值
+}
+
+// 通用属性定义
+message sCommonAttribute
+{
+	optional int32 type = 1;		// 属性类型
+	optional int32 value = 2;		// 属性值
+}
+
+message sInt64Value
+{
+	optional int32 high = 1;		// 高32位
+	optional int32 low = 2;			// 低32位
+}
+
+// 装备信息
+message sEquipInfo
+{
+	optional int64 series_id = 1;								// 装备seriesid，操作服务端数据的索引
+	optional int32 equip_id = 2;								// 装备id，操作物品配置
+	//optional int32 slot_index = 3;							// 装备槽的序号, 0-8
+	optional int32 hero_index = 3;								// 装备在武将的位置，0-5
+	optional int32 level1 = 4;									// 四件套：表示强化等级；宝印/战马：表示精炼等级；宠物：升星等级；宝物：进阶等级；神兵：突破等级
+	optional int32 level2 = 5;									// 四件套：精练等级；宝印/战马：强化等级；宠物：喂养等级；
+	optional int32 exp = 6;										// 经验值
+	repeated sCommonAttribute additional_attribute = 7;			// 暂时不用，但是保留
+}
+
+// 强化等级信息
+message sEnhanceLevelInfo
+{
+	optional int32 index = 1;		// 下标
+	optional int32 level = 2;		// 等级
+	optional int32 power = 3;		// 当前位置加成的战力
+}
+
+// 淬炼等级信息
+message sCuilianLevelInfo
+{
+	optional int32 index = 1;		// 下标
+	optional int32 level = 2;		// 等级
+	optional int32 power = 3;		// 当前位置加成的战力
+}
+
+// 圣物刻印信息结构
+message sCountermarkInfo
+{
+	optional int32 index = 1;		// 下标
+	optional int32 grade = 2;		// 阶层
+	optional int32 level = 3;		// 等级
+	optional int32 power = 4;		// 当前位置加成的战力
+}
+
+// 单个宝石属性
+message sJewel
+{
+	optional int32 id = 1;			// 宝石的物品id	
+	optional int32 slot_id = 2;		// 宝石的孔位
+}
+
+// 某个系统的信息
+message sSystemInfo
+{
+	optional int32 stage = 1;	//第几阶
+	optional int32 power = 2;	//战力
+}
+
+// 装备部位宝石属性
+message sEquipJewel
+{
+	repeated sJewel jewels = 1;		// 装备部位镶嵌的宝石
+	optional int32 slot_id = 2;		// 装备槽索引
+	optional int32 power = 3;		// 战力
+}
+
+// 通用奖励结构（道具，货币）
+message sCommonAward
+{
+	optional int32 tp = 1;			// 奖励类型(enum tagAwardType, 0物品 1货币 2经验 3声望)
+	optional uint32 id = 2;			// 物品id（物品/货币类型1铜钱 3元宝）
+	optional uint32 n = 3;			// 数量
+}
+
+// 多个奖励叠成一份奖励
+message sCommonAwardEx
+{
+	repeated sCommonAward one_award_item = 1;	// 通用奖励结构,多个道具
+}
+
+// 实体属性
+message mid_entity
+{
+	optional fixed32	id = 1;   		//角色id或者怪物ID
+	optional int32	entity_ty = 2;	//实体类型
+	optional int32	icon_id = 3;	//icon id
+	optional int32	pos_x = 4;		//x坐标
+	optional int32	pos_y = 5;		//y坐标
+}
+
+// 生物的属性
+message mid_creature
+{
+	optional int32 level = 1;							//等级
+	optional int32 hp = 2;								//当前血
+	optional int32 max_hp = 3;							//最大血(生命)
+	
+	optional int32 move_speed = 4; 						//速度
+	
+	optional int32 out_attack = 5; 						//攻击
+	optional int32 out_defence = 6; 					//防御
+	
+	optional int32 hit_value = 7;						//命中值
+	optional int32 critical_strikes_rate_value = 8;		//爆击值
+	optional int32 dodge_value = 9;						//闪避值	
+	optional int32 defcriticalstrikes = 10;				//抗爆击值
+	
+    optional int32 attack_append = 11;					//伤害加深(百分比)
+	optional int32 def_damage_add = 12;					//伤害减免(百分比)
+    optional int32 critical_double_add = 13; 			//暴击加深
+	optional int32 def_critical_double_add = 14;		//暴击减免
+}
+
+// 玩家角色属性集1(用于外观显示)
+message mid_actor_apper
+{
+	optional int32 wing_id = 1; 			//翅膀模型id
+	optional int32 model = 2;				//模型ID(战甲模型id)
+	optional int32 weapon_appearance = 3;	//武器的外观
+	optional int32 sex = 4;					//男女
+	optional int32 vocation = 5;			//职业
+	optional int32 fabao_model = 6; 		//法宝模型id
+	optional int32 pet_model = 7; 			//宠物模型id
+	repeated int32 title_ids = 8;			//称号id列表
+	optional int32 pet_id = 9;				//宠物id
+	optional int32 yingzong_id = 10;		//影踪模型id
+}
+
+//玩家角色属性集(其他)
+message mid_actor_others
+{
+	optional uint64	exp = 1;				//经验
+	optional uint64 max_exp = 2;  			//当前等级最大的经验
+	optional uint32 non_bind_coin = 3;		//非绑定金钱
+	optional uint32 non_bind_yuanbao = 4;	//非绑定元宝
+	optional int32 fight_value = 5; 		//战斗力
+	optional int32 shengwang = 6;			//声望
+	optional int32 vip_level = 7;			//vip等级
+	optional uint32 aixin = 8;				//爱心值
+	optional int32	top_arena_score = 9;	//天下第一武道会积分（武魂点）
+}
+
+// 铭文信息
+message sMingwen
+{
+	optional int32 index = 1;			// 部位索引
+	optional int32 power = 2;			// 战力
+}
+
+// 伤害信息
+message mid_one_damage
+{
+	optional int32 	skill_id	= 1;	//技能id或buffid
+	optional uint32 damage		= 2;	//伤害值
+	
+	
+	optional int32	death_flag	= 3;	//是否是致死伤害(0未触发致死 1触发了致死)
+	optional int32	enemy_hp	= 4;	//敌人的血量
+	
+	optional int32	strikes_flag= 5;	//是否产生了暴击（0为未产生暴击 1产生了暴击）
+	
+	optional int32	level		= 6;	//技能等级或buff等级
+}
+
+// 单个法宝信息
+message sFabaoInfo
+{
+	optional int32 index = 1;				// 索引(从1开始)
+	optional uint32 stage = 2;				// 阶数(0阶是未激活)
+}
+
+// 注灵数据
+message sZhuling
+{
+	optional int32 index = 1;		// 下标，1角色2神兵3战甲4翅膀5侍女6影踪
+	optional int32 grade = 2;		// 阶数
+	repeated int32 flags = 3;		// 数组，下标1,2,3分别对应3种属性是否注灵例如flag[1]=0表示第一个位置没有注灵，非0表示已经注灵
+}
+
+// 单个排名信息
+message sRankSingleInfo
+{
+	optional int32		rank_id		= 1;	//名次
+	optional fixed32	actorid		= 2;	//玩家id
+	optional string		actorname	= 3;	//玩家名字
+}
+
+
+// 游戏服务器协议 - 角色管理 2001-2050
+
+//package pb_gs_actormgr;
+
+// 角色数据
+message sActorData
+{
+	optional fixed32 actor_id = 1;		// 角色id
+	optional string actor_name = 2;		// 角色昵称
+	optional int32 icon = 3;			// 头像
+	optional int32 level = 4;			// 等级
+	optional int32 fight = 5;			// 战力
+	optional int32 gateid = 6;			// 地图id
+}
+	
+// 检测入场券
+// id = 2001
+message c2s_check_ticket
+{
+	optional int32 account_id = 1;		//帐号id(登录成功返回的)
+	optional string ticket = 2;			//入场券(登录成功返回的)
+}
+// id = 2002
+message s2c_check_ticket
+{
+	optional sint32 result = 1;			//验证结果（0成功）
+}
+
+// 查询角色列表
+// id = 2003
+message c2s_query_actor_list
+{
+}
+// id = 2004
+message s2c_query_actor_list
+{
+	optional int32 account_id = 1;		// 帐号id
+	repeated sActorData actor_data = 2;	// 角色数据
+	optional int32 default_actor = 3;	// 默认选择索引
+	optional int32 default_gateid = 4;	// 默认地图id
+}
+
+// 随机名字
+// id = 2005
+message c2s_random_name
+{
+	optional int32 sex	= 1;	// 性别
+}
+// id = 2006
+message s2c_random_name
+{
+	optional sint32 result = 1;			//结果（成功时后面字段才有值）
+	optional int32 sex	= 2;			// 性别
+	optional string name = 3;			// 昵称
+}
+
+// 创建角色
+// id = 2007
+message c2s_create_actor
+{
+	optional string name 	= 1;			// 昵称
+	optional int32 sex		= 2;			// 性别
+	optional int32 job 		= 3;			// 职业
+	optional string pf	 	= 4;			// 平台或渠道简称
+}
+// id = 2008
+message s2c_create_actor
+{
+	optional sint32 result = 1;			// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;		// 角色id
+}
+
+// 进入游戏
+// id = 2009
+message c2s_enter_game
+{
+	optional fixed32 actor_id = 1;			// 角色id
+	optional string pf = 2;					// 平台或渠道简称
+}
+// id = 2010
+message s2c_enter_game
+{
+	optional sint32 result = 1;			//结果（成功时后面字段才有值）
+}
+
+// 删除角色
+// id = 2015
+message c2s_del_actor
+{
+	optional fixed32 actor_id = 1;			// 角色id
+}
+// id = 2016
+message s2c_del_actor
+{
+	optional sint32 result = 1;				// 结果（0成功）
+	optional fixed32 actor_id = 2;			// 角色id
+}
+
+
+
+// 游戏服务器协议 - 充值系统 2051-2100
+
+//package pb_gs_pay;
+
+// 充值数据 
+message sPayInfo
+{
+	optional int32 index = 1;				// 索引，同支付成功的itemid
+	optional int32 times = 2;				// 充值次数（0代表未首充）
+}
+
+// 请求基础数据
+// id = 2051
+message c2s_pay_base_info
+{
+}
+
+// 下发基础数据
+// id = 2052
+message s2c_pay_base_info
+{
+	repeated sPayInfo pays = 2;				// 充值记录
+}
+
+
+
+// 游戏服务器协议 - 属性管理 2201-2300
+
+//import "gs_common.proto";
+
+//package pb_gs_attribute;
+
+// 2202 角色通知
+// id = 2202
+message s2c_role_apper
+{
+	optional int64 handle = 1;								//主角的handle 
+	
+	optional mid_entity entity_data = 2;					//实体的属性
+	optional mid_creature creature_data = 3;				//生物的属性
+	optional mid_actor_apper actor_apper_data = 4;			//玩家的属性集1
+	optional mid_actor_others actor_others_data = 5;		//玩家的属性集2
+	
+	optional string name = 6; 								//玩家的名字
+}
+
+// 2204 玩家的属性变化
+// id = 2204
+message s2c_attr_change
+{
+	repeated attribute_int		int_attribute_list = 1;		//属性列表1
+	repeated attribute_uint		uint_attribute_list = 2;	//属性列表2
+	repeated attribute_int64	int64_attribute_list = 3;	//属性列表3
+	repeated attribute_uint64 	uint64_attribute_list = 4;	//属性列表4
+}
+
+// 2206 其他实体出现通知
+// id = 2206
+message s2c_others_apper
+{
+	optional int64 handle = 1;								//实体的handle 
+	
+	optional mid_entity entity_data = 2;					//实体的属性
+	optional mid_creature creature_data = 3;				//生物的属性
+	optional mid_actor_apper actor_apper_data = 4;			//玩家的属性集1
+	
+	optional string name = 6; 								//名字
+	optional int32 relation = 7;							//与主角的关系(0属于自己的 1中立 2友方 3敌方 4附近的）
+}
+
+// 2210 其他实体的属性变化
+// id = 2210
+message s2c_others_attr_change
+{
+	optional int64				handle	= 1;				//实体的handle
+	repeated attribute_int		int_attribute_list = 2;		//属性列表1
+	repeated attribute_uint		uint_attribute_list = 3;	//属性列表2
+	repeated attribute_int64	int64_attribute_list = 4;	//属性列表3
+	repeated attribute_uint64	uint64_attribute_list = 5;	//属性列表4
+}
+
+// 2212 实体消失
+// id = 2212
+message s2c_entity_disapper
+{
+	optional int64 handle = 1;				//实体的handle
+}
+
+// 2214 附近的实体消失
+// id = 2214
+message s2c_near_entity_disapper
+{
+	optional int64 handle = 1;				//实体的handle
+}
+
+
+
+
+
+// 游戏服务器协议 - 默认系统 2301-3000
+
+//package pb_gs_default;
+
+// 玩家移动
+// id = 2301
+message c2s_actor_move
+{
+	optional int32 pos_x  = 1;	//x坐标（像素坐标）
+	optional int32 pos_y  = 2;	//y坐标 (像素坐标)
+}
+
+// 玩家移动
+// id = 2302
+message s2c_actor_move
+{
+	optional int64 handle = 1;	//实体的handle  
+	optional int32 pos_x  = 2;	//x坐标（像素坐标）
+	optional int32 pos_y  = 3;	//y坐标 (像素坐标)
+}
+
+// 请求服务器时间（目前可以暂不支持请求）
+// id = 2309
+message c2s_get_server_time
+{
+}
+// 下发服务器时间（创建s2c_role_apper协议之前推送，新的一天推送）
+// id = 2310
+message s2c_get_server_time
+{
+	optional uint32 server_curr_time = 1;		// 服务器当前时间，MiniTime（从2010-1-1 00:00:00 到现在的秒数）
+	optional uint32 server_open_time = 2;		// 服务器开服时间，MiniTime（从2010-1-1 00:00:00 到现在的秒数）
+	optional uint32 server_open_days = 3;		// 服务器开服天数
+}
+
+// 心跳（1分钟请求一次，过于频繁或过慢都会被踢掉）
+// id = 2311
+message c2s_heartbeat
+{
+	optional uint32 client_tick = 1;			// 客户端时钟（或叫update计数）
+}
+
+// 心跳返回
+// id = 2312
+message s2c_heartbeat
+{
+}
+
+// 新的一天
+// id = 2314
+message s2c_newday
+{
+}
+
+// 打开关闭一个界面
+// id = 2316
+message s2c_open_ui
+{
+	optional uint32 state = 1;		// 1打开 0关闭
+	optional uint32 ui_id = 2;		// 界面id，由前端提供
+	optional string info = 3;		// 文字信息
+}
+
+//请求离线收益
+// id = 2321
+message c2s_out_line_fuben_exp
+{
+}
+
+message mid_one_item_buy_info
+{
+	optional int32 id	= 1;	//商品id
+	optional int32 num	= 2;	//已购买次数
+}
+
+//下发离线修炼信息
+//id = 2322
+message s2c_out_line_fuben_exp
+{
+	optional int32					per_coin 					= 1;	//每分钟的金币收益
+	optional int32					per_exp						= 2;	//每分钟的经验收益
+	optional uint32					out_line_time				= 3;	//离线时间（单位秒）
+	optional int32					coin_num					= 4;	//金币收益
+	optional int32					coin_extra					= 5;	//额外的金币收益
+	optional int32					exp_num						= 6;	//经验收益
+	optional int32					exp_extra					= 7;	//额外的经验收益
+	repeated mid_one_item_buy_info	item_info					= 8;	//商品购买详情
+}
+
+// 2323 领取离线收益
+// id = 2323
+message c2s_get_outline_reward
+{
+	optional int32 tp = 1;	//0领取普通离线经验， 1领取vip离线经验 2领取普通离线金币 3领取vip离线金币
+}
+
+// 2325 购买离线收益商品
+// id = 2325
+message c2s_buy_outline_item
+{
+	optional int32 id	= 1;	//商品id
+	optional int32 num	= 2;	//购买的数量
+}
+
+// 2326 购买离线商品返回
+// id = 2326
+message s2c_buy_outline_item
+{
+	repeated mid_one_item_buy_info item_info	= 1;	//商品购买详情
+}
+
+
+/*
+1:世界boss
+2:全民魔兽
+3:杀戮战场
+4:护送飞艇
+*/
+// 2332 某种活动开启
+// id = 2332
+message s2c_someone_open
+{
+	optional int32	id		= 1;
+	optional int32	param1	= 2;
+	optional int32	param2	= 3;
+	optional string	sparam1	= 4;
+	optional string	sparam2	= 5;
+}
+
+// 2334 某种活动关闭
+// id = 2334
+message s2c_someone_close
+{
+	optional int32	id		= 1;
+	optional int32	param1	= 2;
+	optional int32	param2	= 3;
+	optional string	sparam1	= 4;
+	optional string	sparam2	= 5;
+}
+
+//幻化系统相关 2351 - 2370（已被占坑）	
+// 幻化系统属性
+
+message sHuanhuaData
+{
+	optional int32 huanhua_id = 1;  // 仙器ID
+	optional int32 left_seconds = 2;// 剩余使用时间，0表示不过期
+	optional int32 level = 3;		// 星级
+	optional int32 type = 4;		// 对应的系统类型，1-5分别对应，神兵，战甲，翅膀，侍女，影踪
+	
+}
+
+// 请求幻化系统信息
+
+//id = 2351
+message c2s_huanhua_info
+{
+}
+
+// id = 2352
+message s2c_huanhua_info
+{
+	repeated sHuanhuaData huanhua_info = 1; //数组
+	repeated int32 active_ids = 2;			// 当前幻化的时装id,0表示这个部位没有幻化
+}
+
+
+// 请求激活、幻化、取消幻化
+
+// id = 2353
+message c2s_huanhua_operating
+{
+	optional int32 type = 1;  // 1:激活；2:幻化；3：取消幻化
+	optional int32 huanhua_id = 2; 
+}
+
+// 回复前端激活、幻化、取消幻化
+// id = 2354
+message s2c_huanhua_operating
+{
+	optional sHuanhuaData huanhua_item = 1; // 如果是激活或幻化，则返回这个时装的信息，取消幻化，这个字段为空
+}
+
+// 升级时装
+// id = 2355
+message c2s_huanhua_levelup
+{
+	optional int32 huanhua_id = 1;	// 幻化id
+}
+
+// id = 2356
+message s2c_huanhua_levelup
+{
+	optional sHuanhuaData huanhua_item = 1;	// 升级后的时装信息
+}
+
+//系统开启相关 2371 - 2390（已被占坑）	
+message sSystemOpenData
+{
+	optional int32 sys_id = 1;				// 当前系统id（详见enum tagSystemId）
+	optional int32 status = 2;				// 系统状态 0未开启 1开启 / 奖励领取 0未领取 1领取
+}
+// 获取系统开启信息
+// id = 2371
+message c2s_system_open_info
+{
+}
+
+// 下发系统开启信息
+// id = 2372
+message s2c_system_open_info
+{
+	repeated sSystemOpenData infos = 1;		// 需要手动开启的状态
+}
+
+// 获取系统开启奖励信息
+// id = 2373
+message c2s_system_open_reward_info
+{
+}
+// 下发系统开启奖励信息
+// id = 2374
+message s2c_system_open_reward_info
+{
+	repeated int32 sysids = 1;				// 已领取的系统id
+}
+
+// 领取系统开启奖励信息
+// id = 2375
+message c2s_get_system_open_reward
+{
+	optional int32 sys_id = 1;				// 当前系统id（详见enum tagSystemId）
+}
+// 下发领取系统开启奖励信息结果
+// id = 2376
+message s2c_get_system_open_reward
+{
+	optional int32 sys_id = 1;				// 领取成功的系统id
+}
+
+// 手动开启系统
+// id = 2377
+message c2s_manual_open_system
+{
+	optional int32 sys_id = 1;				// 当前系统id（详见enum tagSystemId）
+}
+
+// 下发手动开启系统
+// id = 2378
+message s2c_manual_open_system
+{
+	optional sSystemOpenData info = 1;		// 需要手动开启的状态
+}
+
+// 下一系统预告
+// id = 2379
+message c2s_next_open_system
+{
+}
+
+// 下一系统预告返回
+// id = 2380
+message s2c_next_open_system
+{
+	optional int32 sys_id = 1;				// 下一个即将开启系统id（详见enum tagSystemId）
+}
+
+// 战胜某个玩家
+// id = 2400
+message s2c_win_sb
+{
+	optional int32 fuben_tp = 1;			// 副本类型
+	optional string account_name = 2;		// 账号名（openid）
+}
+
+//测试协议
+// id = 2999
+message c2s_wxj_test_64
+{
+	repeated int64 num = 1;
+}
+
+// 测试协议
+// id = 3000
+message s2c_wxj_test_64
+{
+	optional int64	test_int64_1 	= 1;
+	optional int64	test_int64_2	= 2;
+	optional uint64	test_uint64_1	= 3;
+	optional uint64	test_uint64_2	= 4;
+}
+
+
+// 游戏服务器协议 - 挂机系统 3051-3100
+
+//package pb_gs_auto;
+
+
+
+// 游戏服务器协议 - BUFF系统 3201-3300
+
+//package pb_gs_buff;
+
+
+
+// 游戏服务器协议 - 技能系统 3301-3400
+
+//package pb_gs_skill;
+//import "gs_common.proto";
+// 技能属性
+message sSkillAttribute
+{
+	optional int32 skill_id = 1;        // 技能id
+	optional int32 level = 2;           // 技能等级
+	optional int32 type = 3;            // 技能类型： 1:角色自带技能, 2:XXX,3:XXX
+    optional int32 status = 4;          // 技能状态：升级：0，新增：1 失效:-1
+    optional int32 nextLevelNeed = 5;   // 升级到下一技能等级需要的角色等级
+    optional int32 updateCost = 6;      // 升级到下一技能等级的消耗铜钱
+}
+
+// 请求升级技能
+// id = 3301
+message c2s_skill_update
+{
+	optional int32 type = 1[default = 0];    // type=0: 升级，type=1：全部升级 type = 2:请求全部升级消耗铜钱
+    optional int32 skill_id = 2;             // 技能ID
+}
+
+// 下发技能信息
+//id= 3302
+message s2c_skill_info
+{
+	optional sint32 result = 1[default = 0];       // 结果
+	optional int32 cost = 2;                       // 全部升级消耗
+	repeated sSkillAttribute skill = 3;            // 下发技能信息数组
+}
+
+// 获取武魂信息
+// id = 3303
+message c2s_wuhun_info
+{
+	
+}
+
+// 返回武魂信息
+// id = 3304
+message s2c_wuhun_info
+{
+	optional int32 grade = 1;				// 武魂的阶层(flag = 1,2,3显示)
+	optional int32 level = 2;				// 武魂的等级(flag = 1,2,3显示)
+	optional int32 exp = 3;					// 当前经验(flag = 3显示)
+	optional int32 total_exp = 4;				// 总经验 (flag = 3显示)
+	repeated sCommonAttribute current_attr = 5;		// 当前的属性，如果没有，表示激活新的阶层(flag = 2,3显示)
+	repeated sCommonAttribute next_attr = 6;		//  下次升级或激活的属性，如果没有，表示满级(flag = 0,1,3显示)
+	optional int32 activated_skill = 7[default = 0];		// 已经激活的技能id，如果为0，表示没有激活的技能(值不为0时显示)
+	optional int32 skill_to_activate = 8 [default = 0];	// 待激活的技能id,activated_skill为0显示(值不为0时显示)
+	optional int32 cost = 9;					// 升级消耗的金币(flag=3时显示)
+	optional int32 flag = 10;				// 0表示未激活，1表示可进阶（例如1阶10级，可以进阶到2阶0级），2满级无法再升级进阶，3默认情况
+}
+
+// 升级武魂
+// id = 3305
+message c2s_upgrade_wuhun
+{
+}
+
+// 升级武魂返回
+// id = 3306
+message s2c_upgrade_wuhun
+{
+	optional int32 flag = 1;					// 如果flag是0，把当前经验替换成exp，如果flag是1，重新请求3303协议，刷新界面
+	optional int32 exp = 2;					// 当前经验
+}
+
+message sBuffState
+{
+	optional int32 buff_id 	= 1;		// buffid
+	optional int32 flag		= 2;		// 0表示删除，1表示新增
+}
+
+// 下发其他人的技能信息
+// id = 3308
+message s2c_others_skill_info
+{
+	optional int64				handle			= 1;	//实体的handle
+	repeated sSkillAttribute	skill			= 2;	//下发技能信息数组
+	repeated sBuffState 		buff_state_list = 3;	//buff列表
+	optional int32				relation		= 4;	//与主角的关系(0属于自己的 1中立 2友方 3敌方 4附近的)
+}
+
+message sXianfa
+{
+	optional int32 index = 1;		// 仙法技能槽的下标
+	optional int32 xianfa_id = 2;	// 仙法id
+}
+
+// 获取仙法技能信息
+// id = 3309
+message c2s_xianfa_info
+{
+	
+}
+
+// id = 3310
+message s2c_xianfa_info
+{
+	repeated sXianfa xianfa_list = 1;	// 已经学习的仙法
+	optional int32  max_number = 2;	// 仙法的最大数量
+}
+
+// 学习仙法技能
+// id = 3311
+message c2s_learn_xianfa
+{
+	optional int32 xianfa_id = 1; 		// 仙法的id
+}
+
+// id = 3312
+message s2c_learn_xianfa
+{
+	optional sXianfa new_xianfa = 1;	// 新学习的仙法
+}
+
+// 合成仙法
+// id = 3313 
+message c2s_combine_xianfa
+{
+	repeated int64 xianfa_series = 1;	// 仙法技能书的guid，只能是3个
+}
+
+// id = 3314
+message s2c_combine_xianfa
+{
+	optional int32 new_item_id = 1; 	// 合成后的奖励
+	optional int64 new_series =2;		// 新道具的guid
+}
+
+// 更新buff
+// id = 3316
+message s2c_update_buff
+{
+	repeated sBuffState buff_state_list = 1;	// 需要更新的buff列表
+}
+
+// 一键提升武魂(直接点亮一颗星)
+// id = 3317
+message c2s_onekey_upgrade_wuhun
+{
+	
+}
+
+// id = 3318
+message s2c_onekey_upgrade_wuhun
+{
+	
+}
+
+// 游戏服务器协议 - 任务系统 3501-3600
+
+//package pb_gs_quest;
+
+// 3501 请求主线任务列表
+// id = 3501
+message c2s_get_quest_info
+{
+}
+
+// 3502 下发主线任务列表
+// id = 3502
+message s2c_send_quest_info
+{
+	optional int32 quest_id	= 1;	//任务id
+	optional int32 process	= 2;	//任务进度
+}
+
+
+// 3503	领取任务奖励
+// id = 3503
+message c2s_get_quest_reward
+{
+}
+
+
+
+// 每日阵法历练任务统属性
+message sTaskAttribute
+{
+	optional int32 id = 1;  
+	optional int32 times = 2;       // 已完成次数
+}
+
+// 请求每日阵法系统信息
+//id = 3505
+message c2s_zhenfa_info
+{
+}
+
+// id = 3506
+message s2c_zhenfa_info
+{
+    optional sint32 result = 1[default = 0]; 
+    optional int32 level =2;
+    optional int32 exp =3;
+	repeated sTaskAttribute task_info = 4; 
+}
+
+
+// 请求升级
+// id = 3507
+message c2s_zhenfa_update
+{
+}
+
+// 响应升级
+// id = 3508
+message s2c_zhenfa_update
+{
+    optional sint32 result = 1[default = 0]; 
+	optional int32 level =2;
+    optional int32 exp =3; 
+}
+
+// 游戏服务器协议 - PK系统 3601-3700
+
+//package pb_gs_pk;
+
+
+
+// 游戏服务器协议 - 竞技场系统 3701-3800
+
+//import "gs_common.proto";
+
+//package pb_gs_pk_arena;
+
+// 竞技场单个玩家的粗略信息
+message mid_one_person_simple_info
+{
+	optional uint32 		rank_id		= 1;	//名次
+	optional fixed32		actor_id	= 2;	//玩家的id
+	optional int32			vip_level	= 3;	//vip等级
+	optional int32			icon_id		= 4;	//icon_id
+	optional int32			level		= 5;	//等级
+	optional int32			sex			= 6;	//性别
+	optional int32 			vocation	= 7;	//职业
+	
+	optional int32			fight_value	= 8;	//战力
+	repeated sCommonAward	award_info 	= 9;	//排名奖励
+	
+	optional string 		actor_name	= 10;	//角色名
+	
+	optional int32			wing_model	= 11;	//翅膀外观
+	optional int32			weapon_model= 12;	//神兵外观
+	optional int32			model		= 13;	//战甲外观
+	optional int32			month_card	= 14;	//是否是月卡用户（0不是）
+	repeated int32			title_ids	= 15;	//称号列表
+}
+
+// 竞技场历练信息
+message mid_experience_info
+{
+	optional int32 curr_num				= 1;	//当前次数
+	optional int32 total_num			= 2;	//总次数
+	
+	repeated sCommonAward award_info	= 3;	//预览奖励
+}
+
+// 竞技场自己的信息
+message mid_play_info
+{
+	optional int32 	play_num		= 1;				//今日已挑战次数
+	optional int32	buy_play_num 	= 2;				//今日已购买的挑战次数
+	optional uint32 time_delay		= 3;				//挑战CD
+}
+
+
+//请求竞技场信息
+// id = 3701
+message c2s_pk_arena_info
+{
+}
+
+
+// 下发竞技场信息
+// id = 3702
+message s2c_pk_arena_info
+{
+	optional mid_play_info play_info						= 1;	//自己的竞技场信息
+	optional mid_experience_info experience_info			= 2;	//竞技场历练信息
+}
+
+
+// 请求竞技场挑战
+// id = 3703
+message c2s_arena_pk_enemy
+{
+	optional uint32 	rank_id		= 1;	//名次
+	optional fixed32	actor_id	= 2;	//玩家的id
+}
+
+// 下发对手信息
+// id = 3704
+message s2c_pk_arena_enemy_info
+{
+	repeated mid_one_person_simple_info person_simple_info	= 1;	//可挑战对手的粗略信息
+}
+
+
+// 刷新对手
+// id = 3705
+message c2s_refresh_enemy
+{
+}
+
+
+// 清除挑战CD
+// id = 3707
+message c2s_clear_pk_cd
+{
+}
+
+
+// 购买挑战次数
+// id = 3709
+message c2s_buy_pk_arena_play_num
+{
+	optional uint32 num = 1;
+}
+
+
+// 领取竞技场活跃奖励
+// id = 3711
+message c2s_get_pk_arena_chapter_reward
+{
+}
+
+// 请求竞技场排行榜
+// id = 3713
+message c2s_get_pk_arena_rank_list
+{
+}
+
+
+//竞技场排行榜的一个单元
+message one_pk_arena_rank_info
+{
+	optional int32 rank_id		= 1;	//排名奖励
+	optional int32 vip_level	= 2; 	//vip等级
+	optional int32 level		= 3;	//等级
+	optional int32 fight_value	= 4;	//战力
+	optional string name 		= 5;	//玩家的名字
+	optional int32	month_card	= 6;	//是否是月卡用户（0不是）
+	optional int32 pk_together	= 7;	//切磋胜利次数
+}
+
+// 下发竞技场排行榜
+// id = 3714
+message s2c_send_pk_arena_rank_list
+{
+	repeated one_pk_arena_rank_info rank_list = 1;	//竞技场排名信息
+}
+
+// 请求竞技场对手信息
+// id = 3715
+message c2s_pk_arena_enemy_info
+{
+}
+
+
+
+
+
+// 游戏服务器协议 - BOSS系统 3801-3900
+
+//package pb_gs_boss;
+
+
+
+// 游戏服务器协议 - 装备系统 4001-4100
+
+//import "gs_common.proto";
+
+//package pb_gs_equip;
+
+//获取装备信息  
+//id=4001
+message c2s_equip_info 
+{
+}
+
+//id=4002
+message s2c_equip_info
+{
+	repeated sEquipInfo equip = 1;	// 身上的装备 
+}
+
+//  换装备
+//id=4003
+message c2s_take_on_equip
+{
+	repeated int64 equip_series_id = 1;	// 欲换上的装备series id， 如果是一键换装，则发多个id
+}
+
+//id=4004
+message s2c_take_on_equip
+{
+	
+}
+
+// 强化装备槽界面信息
+//id=4005
+message c2s_enhance_equip_info
+{
+	
+}
+
+//id=4006
+message s2c_enhance_equip_info
+{
+	optional sint32 result = 1;  			// 结果
+	repeated sEnhanceLevelInfo level_info = 2;	// 当前强化等级，从第一个部位开始排序
+}
+
+// 强化装备槽
+//id=4007
+message c2s_enhance_equip
+{
+	
+}
+
+//id=4008
+message s2c_enhance_equip
+{
+	optional int32 index = 1; 	// 强化的索引
+	optional int32 power = 2;	// 强化当前位置加成的战力
+}
+
+// 淬炼装备槽界面信息(cuilian=淬炼)
+//id=4009
+message c2s_cuilian_equip_info
+{
+	
+}
+
+//id=4010
+message s2c_cuilian_equip_info
+{
+	optional sint32 result = 1;  			// 结果
+	repeated sCuilianLevelInfo level_info = 2;	// 当前淬炼等级，从第一个部位开始排序
+}
+
+// 淬炼装备槽(cuilian=淬炼)
+//id=4011
+message c2s_cuilian_equip
+{
+	
+}
+
+//id=4012
+message s2c_cuilian_equip
+{
+	optional int32 index = 1;	// 淬炼的索引
+	optional int32 power = 2;	// 淬炼当前位置加成的战力
+}
+
+// 换装备变更通知
+// id = 4014
+message s2c_take_on_equip_notify
+{
+	repeated int64 series_id = 1;	// 装备的series id
+	repeated int32 slot_index = 2;  // 装备部位
+	optional int32 zhuxian_suit_level = 3;	// 诛仙装备的套装属性 
+}
+
+
+// 橙装升级，适应所有拥有此玩法的系统
+// id = 4015
+message c2s_upgrade_orange_equip
+{
+	optional int32 index = 1; // 部位id
+}
+
+// id = 4016
+message s2c_upgrade_orange_equip
+{
+	optional int64 series_id = 1; 	      //新装备的series id
+}
+
+
+// 获取圣物刻印信息
+// id = 4017
+message c2s_shengwu_countermark_info
+{
+	
+}
+
+// id = 4018
+message s2c_shengwu_countermark_info
+{
+	repeated sCountermarkInfo slot_info = 1;	// 圣物部位的刻印等级信息
+}
+
+// 升级/进阶圣物(刻印玩法)
+// id = 4019
+message c2s_shengwu_countermark
+{
+	optional int32 index = 1;			// 部位id
+}
+
+// id = 4020
+message s2c_shengwu_countermark
+{
+	optional int32 index =1;			// 部位id
+	optional int32 level = 2;			// 刻印后的等级，如果失败不变
+	optional int32 grade = 3;			// 品阶
+	optional int32 power = 4;			// 部位加成的战力，升级成功才设置
+}
+
+// 获取所有宝石镶嵌信息
+// id = 4021
+message c2s_equip_jewel_info
+{
+	
+}
+
+// id = 4022
+message s2c_equip_jewel_info
+{
+	repeated sEquipJewel jewel_info = 1;	// 宝石镶嵌信息
+}
+
+// 一键镶嵌宝石
+// id = 4023
+message c2s_equip_inlay_jewel
+{
+	optional int32 equip_slot_id = 1;		// 装备的部位id列表
+	repeated int64 jewel_series_ids = 2;	// 宝石的guid列表
+}
+
+// id = 4024
+message s2c_equip_inlay_jewel
+{
+	repeated int32 new_jewel_ids = 1;		// 镶嵌的宝石道具id
+	optional int32 equip_slot_id = 2;		// 装备的部位id
+	optional int32 power = 3;				// 战力
+}
+
+// 升级宝石
+// id = 4025
+message c2s_upgrade_equip_jewel
+{
+	optional int32 equip_slot_id = 1;		// 装备部位id
+	optional int32 jewel_slot_id = 2;		// 宝石部位id
+}
+
+// id = 4026
+message s2c_upgrade_equip_jewel
+{
+	optional int32 new_jewel_id = 1;		// 升级后宝石的id
+	optional int32 equip_slot_id = 2;		// 装备的部位id
+	optional int32 power = 3;				// 战力
+}
+
+// 铭文
+// id = 4027
+message c2s_mingwen_info
+{
+	
+}
+
+// id = 4028
+message s2c_mingwen_info
+{
+	repeated sMingwen info = 1;				// 已经铭刻的部位
+}
+
+// 铭文操作
+// id = 4029
+message c2s_mingwen
+{
+	optional int32 index = 1;				// 铭文的部位id
+}
+
+// id = 4030
+message s2c_mingwen
+{
+	optional sMingwen mingwen = 1;			// 当前部位的信息
+}
+
+// 注灵信息
+// id = 4031
+message c2s_zhuling_info
+{
+	
+}
+
+// id = 4032
+message s2c_zhuling_info
+{
+	repeated sZhuling info = 1;
+}
+
+// 注灵操作
+// id = 4033
+message c2s_zhuling
+{
+	optional int32 index = 1;	// 下标，1角色2神兵3战甲4翅膀5侍女6影踪
+	optional int32 attr_num = 2;// 属性编号,如果可以进阶，这个字段没有效果,下标为1，2，3
+}
+
+// id = 4034
+message s2c_zhuling
+{
+	optional sZhuling info = 1; // 注灵后的
+}
+
+// 游戏服务器协议 - 背包系统 4101-4200
+
+//import "gs_common.proto";
+
+//package pb_gs_bag;
+
+// 附加属性的类型
+message sItemAdditionalAttribute
+{
+	optional int32 type = 1;		// 属性类型
+	optional int32 value = 2;		// 属性值
+}
+
+// 获取背包
+//id=4101
+message c2s_bag_info
+{
+
+}
+
+message sBagItem
+{
+	optional int64 series_id = 1;			// 物品seriesid，操作服务端数据的索引
+	optional int32 item_id = 2;				// 物品id，操作物品配置
+	optional int32 count = 3;				// 物品数量
+	optional int32 power = 4;				//  如果是装备，则为装备的战力，如果不是，这个字段不发
+	optional int32 deadline = 5;			// 到期时间，剩余秒数
+	repeated sItemAdditionalAttribute additional_attribute = 6;	// 如果这个物品是装备，则带附加属性
+	optional int32 log_id = 7;				// 日志id，来自哪个系统或功能
+}
+
+//id=4102
+message s2c_bag_info
+{
+	optional sint32 result = 1[default = 0]; 			// 结果
+	repeated sBagItem item = 2;								// 物品列表
+	optional int32 count = 3;							// 物品数量过多时，分开发，每次发送的物品数量,不超过100
+	optional int32 equipment_bag_space = 4;				// 装备背包的容量
+	optional int32 equipment_bag_enlarge_time = 5; 		// 装备背包扩展次数
+	optional int32 order = 6;							// 顺序，这个包是第几个包(道具多的时候会分开发包)
+}
+
+// 扩展背包
+// id=4103
+message c2s_enlarge_bag
+{
+	optional int32 enlarge_time = 1; // 扩展次数
+}
+//id=4104
+message s2c_enlarge_bag
+{
+	optional int32 equipment_bag_space = 1;		// 装备背包的容量
+	optional int32 equipment_bag_enlarge_time = 2; 	// 装备背包扩展次数
+}
+
+// 道具数量变化通知
+//id=4106
+message s2c_item_change_notify
+{
+	optional sint32 result = 1 [default = 0];	// 结果
+	repeated sBagItem item = 2; 			// 物品列表
+}
+
+message sResolveItem
+{
+	optional int64 series_id = 1; // 道具的series id
+	optional int32 count = 2;	// 分解的数量，如果是装备则一定是1 	
+}
+// 道具分解
+// id = 4107
+message c2s_resolve_item
+{
+	repeated sResolveItem resolve_items= 1; // 分解的物品信息
+}
+
+// id = 4108
+message s2c_resolve_item
+{
+	repeated sResolveItem resolve_items = 1; 	// 成功分解的物品信息
+	repeated sCommonAward awards = 2;			// 分解后获得的物品
+	optional int32 smelt_pot_level = 3;			// 熔炉的等级
+	optional int32 smelt_pot_exp = 4;			// 熔炉的经验值
+	optional int32 current_pot_exp = 5;			// 本次熔炼获得的经验值
+}
+
+// 获取熔炉信息
+// id = 4109
+message c2s_smelt_pot_info
+{
+	
+}
+
+// id = 4110
+message s2c_smelt_pot_info
+{
+	optional int32 level = 1;					// 熔炉的等级
+	optional int32 exp = 2;						// 经验
+}
+
+// 使用的道具
+message sUsingItem
+{
+	optional int64 series_id = 1;	// 道具的series id
+	optional int32 count = 2;		// 道具数量
+}
+
+// id = 4111
+message c2s_use_item
+{
+	repeated sUsingItem items = 1;	// 使用的道具列表
+	optional int32 system_id = 2;	// 系统id enum tagSystemId
+}
+
+// id = 4112
+message s2c_use_item
+{
+	repeated int32 item_id = 1;		// 使用的道具id（不是series id）
+}
+
+// 通用礼包通知
+// id = 4114
+message s2c_gift_notify
+{
+	repeated sCommonAward awards = 1;
+}
+
+// 背包容量变化通知
+// id = 4116
+message s2c_bag_space_change_ntf
+{
+	optional int32 space = 1;		// 变化后的背包容量大小
+}
+
+// 合成道具
+// id = 4117
+message c2s_compose_item
+{
+	optional int32 item_id = 1;		// 目标物品的id
+	optional int32 count = 2;		// 数量
+}
+
+// id = 4118
+message s2c_compose_item
+{
+	optional sCommonAward item = 1;		// 物品
+}
+
+message sItemUseTime
+{
+	optional int32 id = 1;			// 道具id
+	optional int32 time = 2;		// 次数
+}
+
+// 请求受限道具的使用次数
+// id = 4119
+message c2s_item_daily_use_time
+{
+	
+}
+
+// id = 4120
+message s2c_item_daily_use_time
+{
+	repeated sItemUseTime info = 1;	
+}
+
+// 游戏服务器协议 - 仓库系统 4201-4300
+
+//package pb_gs_warehouse;
+
+
+
+// 游戏服务器协议 - 合成系统 4301-4400
+
+//package pb_gs_compose;
+
+
+
+// 游戏服务器协议 - 熔炼系统 4401-4500
+
+//package pb_gs_smelt;
+
+
+
+// 游戏服务器协议 - 铭刻系统 4501-4600
+
+//package pb_gs_engrave;
+
+
+
+
+
+// 游戏服务器协议 - 镶嵌系统 4601-4700
+
+//package pb_gs_inlay;
+
+
+
+// 游戏服务器协议 - 宠物系统 5001-5200
+
+//import "gs_common.proto";
+
+//package pb_gs_pet;
+
+// 宠物：请求基础数据
+// id = 5001
+message c2s_pet_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+
+// 宠物：下发基础数据
+// id = 5002
+message s2c_pet_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+	optional uint32 stage = 4;				// 阶数(0阶是未激活)
+	optional uint32 stage_huaxing = 5;		// 幻化的阶数
+	optional uint32 fight_value = 6;		// 战力
+	optional uint32 curr_bless = 7;			// 当前祝福值
+	optional uint32 zizhidan = 8;			// 已使用资质丹数量
+}
+
+// 宠物：使用资质丹返回
+// id = 5004
+message s2c_pet_usezizhidan
+{
+	optional uint32 zizhidan = 1;				// 已使用资质丹数量
+}
+
+// 宠物：升阶
+// id = 5009
+message c2s_pet_stage_upgrade
+{
+	optional int32 auto_buy = 1;				// 是否自动购买
+}
+
+// 宠物：升阶返回
+// id = 5010
+message s2c_pet_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional uint32 stage = 2;					// 进阶后阶数
+	optional uint32 curr_bless = 3;				// 当前祝福值
+	optional uint32 add_bless = 4;				// 增加祝福值
+}
+
+// 宠物：幻化
+// id = 5011
+message c2s_pet_huaxing
+{
+	optional uint32 stage_huaxing = 1;			// 要幻化阶数(0是取消幻化)
+}
+
+// 宠物：幻化返回
+// id = 5012
+message s2c_pet_huaxing
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional uint32 stage_huaxing = 2;			// 幻化后的阶数(0是取消幻化)
+}
+
+// 宠物：激活
+// id = 5013
+message c2s_pet_open
+{
+}
+// 宠物：激活返回
+// id = 5014
+message s2c_pet_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+}
+
+
+
+
+// 游戏服务器协议 - 坐骑系统 5201-5300
+
+//package pb_gs_mount;
+
+
+
+// 游戏服务器协议 - 翅膀系统 5301-5400
+
+//import "gs_common.proto";
+
+//package pb_gs_wing;
+
+// 翅膀：请求基础数据
+// id = 5301
+message c2s_wing_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+
+// 翅膀：下发基础数据
+// id = 5302
+message s2c_wing_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+	optional uint32 stage = 4;				// 阶数(0阶是未激活)
+	optional uint32 stage_huaxing = 5;		// 幻化的阶数
+	optional uint32 fight_value = 6;		// 战力
+	optional uint32 curr_bless = 7;			// 当前祝福值
+	optional uint32 zizhidan = 8;			// 已使用资质丹数量
+}
+
+// 翅膀：使用资质丹返回
+// id = 5304
+message s2c_wing_usezizhidan
+{
+	optional uint32 zizhidan = 1;				// 已使用资质丹数量
+}
+
+// 翅膀：升阶
+// id = 5309
+message c2s_wing_stage_upgrade
+{
+	optional int32 auto_buy = 1;				// 是否自动购买
+}
+
+// 翅膀：升阶返回
+// id = 5310
+message s2c_wing_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional uint32 stage = 2;					// 进阶后阶数
+	optional uint32 curr_bless = 3;				// 当前祝福值
+	optional uint32 add_bless = 4;				// 增加祝福值
+}
+
+// 翅膀：幻化
+// id = 5311
+message c2s_wing_huaxing
+{
+	optional uint32 stage_huaxing = 1;			// 要幻化阶数(0是取消幻化)
+}
+
+// 翅膀：幻化返回
+// id = 5312
+message s2c_wing_huaxing
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional uint32 stage_huaxing = 2;			// 幻化后的阶数(0是取消幻化)
+}
+
+// 翅膀：激活
+// id = 5313
+message c2s_wing_open
+{
+}
+// 翅膀：激活返回
+// id = 5314
+message s2c_wing_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+}
+
+// 游戏服务器协议 - 战甲系统 5401-5500
+
+//import "gs_common.proto";
+
+//package pb_gs_zhanjia;
+
+// 战甲：请求基础数据
+// id = 5401
+message c2s_zhanjia_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+
+// 战甲：下发基础数据
+// id = 5402
+message s2c_zhanjia_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+	optional uint32 stage = 4;				// 阶数(0阶是未激活)
+	optional uint32 stage_huaxing = 5;		// 幻化的阶数
+	optional uint32 fight_value = 6;		// 战力
+	optional uint32 curr_bless = 7;			// 当前祝福值
+	optional uint32 zizhidan = 8;			// 已使用资质丹数量
+}
+
+// 战甲：使用资质丹返回
+// id = 5404
+message s2c_zhanjia_usezizhidan
+{
+	optional uint32 zizhidan = 1;				// 已使用资质丹数量
+}
+
+// 战甲：升阶
+// id = 5409
+message c2s_zhanjia_stage_upgrade
+{
+	optional int32 auto_buy = 1;				// 是否自动购买
+}
+
+// 战甲：升阶返回
+// id = 5410
+message s2c_zhanjia_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional uint32 stage = 2;					// 进阶后阶数
+	optional uint32 curr_bless = 3;				// 当前祝福值
+	optional uint32 add_bless = 4;				// 增加祝福值
+}
+
+// 战甲：幻化
+// id = 5411
+message c2s_zhanjia_huaxing
+{
+	optional uint32 stage_huaxing = 1;			// 要幻化阶数(0是取消幻化)
+}
+
+// 战甲：幻化返回
+// id = 5412
+message s2c_zhanjia_huaxing
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional uint32 stage_huaxing = 2;			// 幻化后的阶数(0是取消幻化)
+}
+
+// 战甲：激活
+// id = 5413
+message c2s_zhanjia_open
+{
+}
+// 战甲：激活返回
+// id = 5414
+message s2c_zhanjia_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+}
+
+
+
+
+// 游戏服务器协议 - 神兵系统 5501-5600
+
+//import "gs_common.proto";
+
+//package pb_gs_shenbing;
+
+// 神兵：请求基础数据
+// id = 5501
+message c2s_shenbing_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+
+// 神兵：下发基础数据
+// id = 5502
+message s2c_shenbing_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+	optional uint32 stage = 4;				// 阶数(0阶是未激活)
+	optional uint32 stage_huaxing = 5;		// 幻化的阶数
+	optional uint32 fight_value = 6;		// 战力
+	optional uint32 curr_bless = 7;			// 当前祝福值
+	optional uint32 zizhidan = 8;			// 已使用资质丹数量
+}
+
+// 神兵：使用资质丹返回
+// id = 5504
+message s2c_shenbing_usezizhidan
+{
+	optional uint32 zizhidan = 1;				// 已使用资质丹数量
+}
+
+// 神兵：升阶
+// id = 5509
+message c2s_shenbing_stage_upgrade
+{
+	optional int32 auto_buy = 1;				// 是否自动购买
+}
+
+// 神兵：升阶返回
+// id = 5510
+message s2c_shenbing_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional uint32 stage = 2;					// 进阶后阶数
+	optional uint32 curr_bless = 3;				// 当前祝福值
+	optional uint32 add_bless = 4;				// 增加祝福值
+}
+
+// 神兵：幻化
+// id = 5511
+message c2s_shenbing_huaxing
+{
+	optional uint32 stage_huaxing = 1;			// 要幻化阶数(0是取消幻化)
+}
+
+// 神兵：幻化返回
+// id = 5512
+message s2c_shenbing_huaxing
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional uint32 stage_huaxing = 2;			// 幻化后的阶数(0是取消幻化)
+}
+
+// 神兵：激活
+// id = 5513
+message c2s_shenbing_open
+{
+}
+// 神兵：激活返回
+// id = 5514
+message s2c_shenbing_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+}
+
+
+// 游戏服务器协议 - 法宝系统 5601-5700
+
+//import "gs_common.proto";
+
+//package pb_gs_fabao;
+
+// 法宝：请求基础数据
+// id = 5601
+message c2s_fabao_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+
+// 法宝：下发基础数据
+// id = 5602
+message s2c_fabao_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+
+	repeated sFabaoInfo fabaos = 4;			// 法宝列表
+	optional uint32 index_huaxing = 5;		// 幻化中法宝索引
+}
+
+// 法宝：升阶
+// id = 5609
+message c2s_fabao_stage_upgrade
+{
+	optional int32 index = 1;					// 索引(从1开始)
+}
+
+// 法宝：升阶返回
+// id = 5610
+message s2c_fabao_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional int32 index = 2;					// 索引(从1开始)
+	optional uint32 stage = 3;					// 进阶后阶数
+}
+
+// 法宝：幻化
+// id = 5611
+message c2s_fabao_huaxing
+{
+	optional int32 index_huaxing = 1;			// 索引(从1开始)
+}
+
+// 法宝：幻化返回
+// id = 5612
+message s2c_fabao_huaxing
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional int32 index_huaxing = 2;			// 幻化后的索引
+}
+
+// 法宝：激活
+// id = 5613
+message c2s_fabao_open
+{
+	optional int32 index = 1;					// 索引(从1开始)
+}
+
+// 法宝：激活返回
+// id = 5614
+message s2c_fabao_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+	optional int32 index = 2;					// 索引(从1开始)
+}
+
+// 游戏服务器协议 - 仙器系统 5701-5800
+
+//import "gs_common.proto";
+
+//package pb_gs_xianqi;
+
+// 单个仙器信息
+message sXianqiInfo
+{
+	optional int32 index = 1;				// 仙器索引
+	optional uint32 stage = 2;				// 阶数(0是未激活)
+	optional uint32 level = 3;				// 等级(0是未激活)
+	optional uint32 star = 4;				// 星级
+}
+
+// 仙器：请求基础数据
+// id = 5701
+message c2s_xianqi_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+// 仙器：下发基础数据
+// id = 5702
+message s2c_xianqi_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+
+	repeated sXianqiInfo xianqis = 4;		// 仙器列表
+}
+
+// 仙器：升星
+// id = 5703
+message c2s_xianqi_star_upgrade
+{
+	optional int32 index = 1;					// 索引(从1开始)
+}
+// 仙器：升星返回
+// id = 5704
+message s2c_xianqi_star_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional int32 index = 2;					// 索引(从1开始)
+	optional uint32 level = 3;					// 等级
+	optional uint32 star = 4;					// 星级
+}
+
+// 仙器：升阶
+// id = 5705
+message c2s_xianqi_stage_upgrade
+{
+	optional int32 index = 1;					// 索引(从1开始)
+}
+
+// 仙器：升阶返回
+// id = 5706
+message s2c_xianqi_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional int32 index = 2;					// 索引(从1开始)
+	optional uint32 stage = 3;					// 进阶后阶数
+}
+
+// 仙器：激活
+// id = 5707
+message c2s_xianqi_open
+{
+	optional int32 index = 1;					// 索引(从1开始)
+}
+
+// 仙器：激活返回
+// id = 5708
+message s2c_xianqi_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+	optional sXianqiInfo xianqi = 2;			// 激活的单个仙器信息
+}
+
+
+// 游戏服务器协议 - 影踪系统 5801-5900
+
+//import "gs_common.proto";
+
+//package pb_gs_yingzong;
+
+// 影踪：请求基础数据
+// id = 5801
+message c2s_yingzong_base_info
+{
+	optional fixed32 actor_id = 1;			// 角色id(支持查找其他人，有则以此查找)
+	optional string actor_name = 2;			// 昵称(支持查找其他人，有则以此查找)
+}
+
+// 影踪：下发基础数据
+// id = 5802
+message s2c_yingzong_base_info
+{
+	optional sint32 result = 1;				// 结果（成功时后面字段才有值）
+	optional fixed32 actor_id = 2;			// 角色id
+	optional string actor_name = 3;			// 昵称
+	optional uint32 stage = 4;				// 阶数(0阶是未激活)
+	optional uint32 stage_huaxing = 5;		// 幻化的阶数
+	optional uint32 fight_value = 6;		// 战力
+	optional uint32 curr_bless = 7;			// 当前祝福值
+	optional uint32 zizhidan = 8;			// 已使用资质丹数量
+}
+
+// 影踪：使用资质丹返回
+// id = 5804
+message s2c_yingzong_usezizhidan
+{
+	optional uint32 zizhidan = 1;				// 已使用资质丹数量
+}
+
+// 影踪：升阶
+// id = 5809
+message c2s_yingzong_stage_upgrade
+{
+	optional int32 auto_buy = 1;				// 是否自动购买
+}
+
+// 影踪：升阶返回
+// id = 5810
+message s2c_yingzong_stage_upgrade
+{
+	optional sint32 result = 1;					// 结果
+	optional uint32 stage = 2;					// 进阶后阶数
+	optional uint32 curr_bless = 3;				// 当前祝福值
+	optional uint32 add_bless = 4;				// 增加祝福值
+}
+
+// 影踪：幻化
+// id = 5811
+message c2s_yingzong_huaxing
+{
+	optional uint32 stage_huaxing = 1;			// 要幻化阶数(0是取消幻化)
+}
+
+// 影踪：幻化返回
+// id = 5812
+message s2c_yingzong_huaxing
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional uint32 stage_huaxing = 2;			// 幻化后的阶数(0是取消幻化)
+}
+
+// 影踪：激活
+// id = 5813
+message c2s_yingzong_open
+{
+}
+// 影踪：激活返回
+// id = 5814
+message s2c_yingzong_open
+{
+	optional sint32 result = 1;					// 结果（0成功）
+}
+
+
+
+
+// 游戏服务器协议 - 飞升系统 5901-6000
+
+//package pb_gs_flyup;
+
+
+
+// 游戏服务器协议 - 聊天系统 6301-6400
+
+//import "gs_common.proto";
+
+//package pb_gs_chat;
+
+/*
+// 聊天频道的ID定义, 这个跟网关有关，不要修改
+enum tagChannelID
+{
+    ciChannelSecret		= 0; 	// 私聊,密语
+    ciChannelNear		= 1;	//(取消）附近频道，同屏
+    ciChannelWorld		= 2;	// 世界,喇叭频道
+    ciChannelGuild		= 3;	// 工会，帮派
+    ciChannelTeam		= 4;	// 队伍频道,5人
+    ciChannelBigTeam	= 5; 	// 团队,20人
+    ciChannelMap		= 6;  	// 地图，本地图可见
+    ciChannelAll		= 7; 	// 世界频道（全服）
+    ciChannelCamp		= 8; 	// 阵营频道
+    ciChannelSystem		= 9;	// 系统频道
+	ciChannelNotTeam	= 10;	// 无队伍玩家频道（客户端显示还是在队伍频道中）
+    ciChannelMax		= 11;	// 最大频道号
+}
+
+// 系统提示的类型
+enum tagTipmsgType
+{
+    ttInvalidTmType = -1;	// 无效的Tipmsg类型
+	ttMarquee = 1;			// 跑马灯
+	ttScreenCenter = 2;		// 屏幕中央飘字
+	ttDialog = 4;			// 弹出框
+	ttChatWindow = 8;		// 左侧聊天栏里
+	ttScreenBalloon = 16;	// 屏幕中央气泡
+	ttGetItem = 32;			// 获得物品
+};
+*/
+
+//一条聊天信息
+message mid_chat_msg_info
+{
+	optional int32 limit_lv		= 1;		// 可看到的玩家最低等级
+	optional fixed32 actor_id	= 2;		// 发送者角色id
+	optional int32 channel_id	= 3;		// 频道id
+	optional int32 vip_level	= 4;		// vip等级
+	optional int32 level		= 5;		// 等级
+	optional int32 job			= 6;		// 职业
+	optional int32 sex			= 7;		// 性别
+	optional int32 iconid		= 8;		// icon id
+	repeated int32 title_ids	= 9;		// 称号id列表
+	optional string nickname	= 10;		// 发送者的昵称
+	optional string content		= 11;		// 聊天的内容
+	
+	
+	optional int32	tp			= 12;		// 消息类型(1组队副本邀请 2猜拳邀请 3跳转系统 4切磋)
+	repeated uint32	else_info	= 13;		// 其他信息(为组队副本邀请时，为副本id)
+	optional int32	month_card	= 14;		// 是否是月卡用户(0不是)
+	optional uint32	time_t		= 15;		// 时间（短时间戳）
+	optional string	click_info	= 16;		// 跳转文本
+}
+
+// 请求最近的聊天信息
+//id = 6301
+message c2s_get_chat_info
+{
+}
+
+// 发送聊天消息到服务端
+// id = 6303
+message c2s_send_chat
+{
+	optional int32	channel_id	= 1;	// 频道id
+	optional string	content		= 2;	// 聊天的内容
+}
+
+// 下发聊天消息到客户端
+// id = 6304
+message s2c_send_chat
+{
+	repeated mid_chat_msg_info chat_info = 1;	//聊天信息
+}
+
+// 系统提示
+// id = 6306
+message s2c_sys_tip_msg
+{
+	optional string content			= 1;					// 信息内容
+	optional int32 show_type		= 2;					// 显示类型，详见enum tagTipmsgType
+	optional int32 limit_level		= 3[default = 0];		// 限制等级，低于该等级不显示,0都显示
+	optional int32 weight			= 4[default = 0];		// 权重(优先级)(数字越高，优先级越高 0为普通公告，9为后台推送的公告)
+}
+
+
+
+// 游戏服务器协议 - 邮件系统 6401-6500
+
+//package pb_gs_mail;
+
+//附件
+message mid_annex
+{
+	optional int32 tp	= 1;	//类型（同奖励id(0道具 1货币 2经验) ）
+	optional int32 id	= 2;	//id
+	optional int32 n	= 3;	//数量
+}
+
+
+//一封邮件的详细信息
+message mid_one_mail_info
+{
+	optional int64 mail_guid		= 1;	//邮件guid
+	optional uint32 mail_tp			= 2;	//邮件类型
+	optional uint32 read_tp			= 3;	//邮件状态（0未读 1已读）
+	optional uint32 send_time		= 4;	//发信的时间(短时间戳)
+	optional string	title			= 5;	//标题
+	optional string	content			= 6;	//内容
+	repeated mid_annex annex_union	= 7;	//附件
+}
+
+//请求邮件列表
+// id = 6401
+message c2s_get_mail_list
+{
+}
+
+//下发邮件列表
+// id = 6402
+message s2c_send_mail_list
+{
+	repeated mid_one_mail_info mail_list = 1;
+}
+
+//提取附件
+// id = 6403
+message c2s_receive_mail
+{
+	optional int32 tp			= 1;	//领取类型(0表示一键提取 1表示领取单个)
+	optional int64 mail_guid	= 2;	//邮件的guid
+}
+
+// 一封邮件的状态信息变化
+message one_mail_change
+{
+	optional int64	mail_guid		= 1;	//邮件的guid
+	optional uint32	read_tp			= 2;	//邮件状态（0未读 1已读）
+	optional uint32 receive_flag	= 3;	//附件是否已被领取（0未领取 1已领取）
+}
+
+// 邮件信息变化
+// id = 6404
+message s2c_mail_info_change
+{
+	repeated one_mail_change mail_change_info = 1;			//邮件的guid
+}
+
+// 阅读邮件
+// id = 6405
+message c2s_read_mail
+{
+	repeated int64	mail_guid		= 1;	//邮件的guid
+}
+
+// 删除邮件
+// id = 6407
+message c2s_delete_mail
+{
+	repeated int64 mail_guid		= 1;	//邮件的guid
+}
+
+// 删除邮件
+// id = 6408
+message s2c_delete_mail
+{
+	repeated int64 mail_guid		= 1;	//邮件的guid
+}
+
+// 增加邮件
+// id = 6410
+message s2c_add_mail
+{
+	repeated mid_one_mail_info mail_list = 1;
+}
+
+
+// 游戏服务器协议 - 好友系统 6501-6600
+
+//package pb_gs_friend;
+
+message sFriend
+{
+	optional fixed32 actor_id = 1;		// 角色id
+	optional string name = 2;			// 玩家名字
+	optional int32 friendly_value = 3; 	// 好友度 
+	optional int32 icon = 4;			// 头像
+	optional int32 sex = 5;				// 性别
+	optional int32 level = 6;			// 玩家等级
+	optional int32 is_online = 7;		// 0表示不在线，非0表示在线
+	optional int32 vip_level = 8;		// vip等级
+	optional int32 is_month_card = 9;	// 是否月卡用户, 0非月卡用户，非0月卡用户
+}
+
+message sFriendRequest
+{
+	optional fixed32 actor_id = 1;		// 角色id
+	optional string name = 2;			// 玩家名字
+	optional int32 power = 3;			// 玩家战力
+	optional int32 icon = 4;			// 玩家头像
+	optional int32 level = 5;			// 玩家等级
+	optional int32 time = 6;			// 申请时间戳，用于排序
+	optional int32 sex = 7;				// 性别
+}
+
+// 请求好友的列表
+// id = 6501
+message c2s_friend_info
+{
+	
+}
+
+// 返回好友的列表或者好友列表有变更时返回
+// id = 6502
+message s2c_friend_info
+{
+	repeated sFriend friend = 1;		// 好友列表
+	optional int32 flag = 2;			// 是否有好友申请
+}
+
+// 请求好友申请列表
+// id = 6503
+message c2s_friend_request_list
+{
+}
+
+// id = 6504
+message s2c_friend_request_list
+{
+	repeated sFriendRequest friend_req = 1;	// 请求列表
+}
+
+
+// 请求添加好友
+// id = 6505
+message c2s_request_add_friend
+{
+	optional string name = 1;			// 好友名字
+}
+
+// id = 6506
+message s2c_request_add_friend
+{
+	
+}
+
+// 同意好友添加请求
+// id = 6507
+message c2s_accept_friend_request
+{
+	repeated string name = 1;			// 好友的名字
+}
+
+// id= 6508 
+message s2c_accept_friend_request
+{
+	optional int32 result = 1;			// 0表示删除这条请求，空或非0不用删除这个请求
+}
+
+// 删除好友
+// id = 6509
+message c2s_delete_friend
+{
+	optional fixed32 actor_id = 1;		// 角色id,好友可能不在线，删好友需要角色id
+	optional string name = 2;			// 好友名字
+}
+
+// id = 6510
+message s2c_delete_friend
+{
+}
+
+// 删除好友申请列表
+// id = 6511
+message c2s_delete_friend_request
+{
+	optional string name = 1;			// 申请者的名字，如果这个为空，表示清空整个列表
+}
+
+// id = 6512
+message s2c_delete_friend_request
+{
+	
+}
+
+// 新好友请求通知
+// id = 6514
+message s2c_new_friend_request_ntf
+{
+	
+}
+
+// 好友聊天
+// id = 6515
+message c2s_friend_chat
+{
+	optional string name = 1;
+	optional string msg = 2;	// 
+}
+
+// id = 6516
+message s2c_friend_chat
+{
+	
+}
+
+// 收到好友信息
+// id = 6518
+message s2c_recv_chat_msg
+{
+	optional fixed32 actor_id = 1;	// 好友的角色id
+	optional string msg = 2;		// 信息字符串
+}
+
+// 好友送花
+// id = 6519
+message c2s_send_friend_flower
+{
+	optional fixed32 actor_id = 1;	// 玩家id
+	optional int32 type = 2;		// 哪种花
+	optional int32 count = 3;		// 数量
+}
+
+// id = 6520
+message s2c_send_friend_flower
+{
+	optional int32 friendly_value = 1; 	// 送花后的好友值
+	optional fixed32 actor_id = 2;		// 好友的id
+	optional int32 is_sender = 3;		// 是否送花者,0不是，非0是
+	optional int32 left_aixin = 4; 		// 剩余可领取的爱心
+	optional string open_id = 5;		
+}
+
+// 主城飘花
+// id = 6522
+message s2c_friend_flower_rain_ntf
+{
+	
+}
+
+// 获取爱心领取信息
+// id = 6523
+message c2s_friend_aixin_info
+{
+	
+}
+
+message sFriendAixin
+{
+	optional fixed32 actor_id = 1;		// 好友id
+	optional fixed32 aixin = 2;			// 爱心值
+}
+// id = 6524
+message s2c_friend_aixin_info 
+{
+	repeated sFriendAixin list = 1; 	// 可领取的爱心列表
+	optional int32 left_aixin = 2;		// 剩余可领取的爱心
+	repeated fixed32 free_flower_actor = 3;// 免费送过花的玩家 
+}
+
+// 领取爱心值
+// id = 6525
+message c2s_get_friend_aixin
+{
+	optional fixed32 actor_id = 1;		// 好友id,不传表示一键领取
+}
+
+// id = 6526
+message s2c_get_friend_aixin
+{
+	optional int32 left_aixin = 1;		// 剩余可领取的爱心
+}
+
+// 好友推荐
+// id = 6527
+message c2s_friend_recommend
+{
+	
+}
+
+// id = 6528
+message s2c_friend_recommend
+{
+	repeated sFriendRequest list = 1;	// 推荐好友的列表
+}
+
+// 游戏服务器协议 - 组队系统 6601-6700
+
+//package pb_gs_team;
+
+
+
+// 游戏服务器协议 - 帮派系统 6701-7000
+//import "gs_common.proto";
+//package pb_gs_guild;
+
+message sGuild
+{
+	optional int32 id = 1;					// 帮派id
+	optional string name = 2;				// 帮派名字
+	optional int32 power = 3;				// 战力
+	optional int32 level = 4;				// 等级
+	optional string leader_name = 5;		// 首领名字
+	optional int32 member_count= 6;			// 成员数量
+	optional int32 is_open_quick_join = 7;	// 是否开启快速加入帮派
+	optional int32 quick_join_power = 8;	// 快速加入帮派战力需求
+	optional string memo = 9;				// 公告
+	optional int32 fund = 10;				// 资金
+	optional int32 icon = 11;				// 图标
+}
+
+message sGuildMember
+{
+	optional fixed32 actor_id = 1;	// 角色id
+	optional string name = 2;		// 玩家名字
+	optional int32 pos = 3;			// 职位(0普通成员1精英2护法3长老4副帮主5帮主)
+	optional int32 vip_level = 4;	// vip等级
+	optional int32 contribute = 5;	// 贡献
+	optional int32 icon = 6;		// 图标
+	optional int32 offline_hour = 7;// 离线小时
+	optional int32 power = 8;		// 战力
+}
+
+
+// 按页获取帮派信息
+// id = 6701
+message c2s_get_guild_by_page
+{
+	optional int32 page = 1;			// 页数
+	optional int32 count_per_page = 2;  // 每页条数
+}
+
+// id = 6702
+message s2c_get_guild_by_page
+{
+	repeated sGuild guild = 1;	// 帮派列表
+}
+
+// 申请加入
+// id = 6703
+message c2s_join_guild_apply
+{
+	optional int32 guild_id = 1;		// 申请的帮派id列表
+}
+
+// id = 6704
+message s2c_join_guild_apply
+{
+	optional int32 guild_id = 1;	// 申请的帮派id
+	optional int32 is_succeed = 2;	// 是否申请成功
+}
+
+// 快速加入帮派
+// id = 6705
+message c2s_quick_join_guild
+{
+	
+}
+
+// id = 6706
+message s2c_quick_join_guild
+{
+	
+}
+
+// 创建帮派
+// id = 6707
+message c2s_create_guild
+{
+	optional string name = 1;		// 帮派名
+	optional int32 icon = 2;		// 帮派图标
+	optional int32 level = 3;		// 创建多少级的帮派
+}
+
+// id = 6708
+message s2c_create_guild
+{
+	
+}
+
+// 获取我的帮派信息
+// id = 6709
+message c2s_guild_details_info
+{
+
+}
+
+// id = 6710
+message s2c_guild_details_info
+{
+	optional sGuild guild = 1;				// 帮派
+}
+
+// 更换帮派图标
+// id = 6711
+message c2s_guild_change_icon
+{
+	optional int32 icon = 1;		// 图标
+}
+
+// id = 6712
+message s2c_guild_change_icon
+{
+	
+}
+
+message sGuildContribute
+{
+	optional string name = 1;		// 玩家名字
+	optional int32  pos = 2;		// 职位
+	optional int32 contribute = 3;  // 贡献
+	optional int32 time = 4;		// 发生时间
+}
+
+// 今日贡献排名,需要客户端自己排序
+// id = 6713
+message c2s_guild_daily_contribute_rank
+{
+	
+}
+
+// id = 6714
+message s2c_guild_daily_contribute_rank
+{
+	repeated sGuildContribute contribute_list = 1; // 成员贡献
+}
+
+message sGuildApply
+{
+	optional fixed32 actor_id = 1;	// 角色id
+	optional string name = 2;		// 角色名字
+	optional int32 icon = 3;		// 角色头像
+	optional int32 power = 4;		// 战力
+	optional int32 vip_level = 5;	// vip等级
+	optional int32 apply_time = 6;	// 申请时间，用于排序
+	optional int32 level = 7;		// 玩家等级
+}
+
+// 查看申请列表
+// id = 6715
+message c2s_guild_apply_list
+{
+	
+}
+
+// id = 6716
+message s2c_guild_apply_list
+{
+	repeated sGuildApply guild_apply = 1;	// 入帮申请
+}
+
+// 处理帮派申请结果
+// id = 6717
+message c2s_guild_apply_result
+{
+	optional fixed32 actor_id = 1;			// 角色id
+	optional int32 result = 2;				// 结果，0表示不同意，非0表示同意
+}
+
+// id = 6718
+message s2c_guild_apply_result
+{
+	
+}
+
+// 修改帮会快速加入设置
+// id = 6719
+message c2s_set_guild_quick_join
+{
+	optional int32 open = 1;		// 是否开启快速加入,0表示不开启，非0表示开启
+	optional int32 power = 2;		// 战力要求
+}
+
+// id = 6720
+message s2c_set_guild_quick_join
+{
+	
+}
+
+// 修改公告
+// id = 6721
+message c2s_set_guild_memo
+{
+	optional string memo = 1;		// 公告
+}
+
+// id = 6722
+message s2c_set_guild_mome
+{
+	optional sGuild guild = 1;		// 帮会信息
+}
+
+// 获取帮派成员列表
+// id = 6723
+message c2s_guild_member_list
+{
+	
+}
+
+// id = 6724
+message s2c_guild_member_list
+{
+	repeated sGuildMember online = 1; // 在线成员
+	repeated sGuildMember offline = 2;	// 离线成员
+}
+
+message sGuildBuilding
+{
+	optional int32 type = 1;	// 建筑类型(0,帮派等级 ,1,习武殿,2旗帜)
+	optional int32 level = 2;	// 建筑等级
+}
+
+// 获取帮派建筑的信息
+// id = 6725
+message c2s_guild_building_info
+{
+}
+
+// id = 6726
+message s2c_guild_building_info
+{
+	repeated sGuildBuilding  building = 1;
+}
+
+// 任命职务
+// id = 6727
+message c2s_change_guild_pos
+{
+	optional fixed32 actor_id = 1;	// 角色id
+	optional int32 pos = 2;			// 职位的编号(0普通成员1精英2护法3长老4副帮主5帮主)
+}
+
+// id = 6728
+message s2c_change_guild_pos
+{
+	
+}
+
+// 删除玩家
+// id = 6729
+message c2s_delete_guild_member
+{
+	optional fixed32 actor_id = 1;	// 角色id,如果是自己的id表示退出帮派
+}
+
+// id = 6730
+message s2c_delete_guild_member
+{
+	optional fixed32 actor_id = 1;	// 退出帮派的玩家id
+}
+
+// 领取福利
+// id = 6731
+message c2s_get_guild_welfare
+{
+	
+}
+
+// id = 6732
+message s2c_get_guild_welfare
+{
+	
+}
+
+message sGuildContributeTime
+{
+	optional int32 type = 1; 	// 捐赠类型
+	optional int32 time = 2;	// 次数
+}
+
+// 玩家每日捐赠次数
+// id = 6733
+message c2s_guild_daily_contribute_time
+{
+
+}
+
+// id = 6734
+message s2c_guild_daily_contribute_time
+{
+	repeated sGuildContributeTime info = 1;	
+}
+
+// 玩家捐献
+// id = 6735
+message c2s_guild_daily_contribute
+{
+	optional int32 type = 1;	// 捐献的类型
+}
+
+// id = 6736
+message s2c_guild_daily_contribute
+{
+	
+}
+
+// 升级帮派建筑
+// id = 6737
+message c2s_guild_building_levelup
+{
+	optional int32 building_id = 1;	// 建筑编号
+}
+
+// id = 6738
+message s2c_guild_building_levelup
+{
+	
+}
+
+message sGuildTask
+{
+	optional int32 id		= 1;		// 成就id
+	optional int32 progress = 2;		// 当前进度
+}
+
+// 获取帮派任务列表
+// id = 6739
+message c2s_guild_task_info
+{
+	
+}
+
+// id = 6740
+message s2c_guild_task_info
+{
+	repeated sGuildTask task_list = 1; 	// 帮派任务列表
+}
+
+// 领取帮派任务奖励
+// id = 6741
+message c2s_get_guild_task_award
+{
+	optional int32 id = 1;		// 帮派任务id
+}
+
+// id = 6742
+message s2c_get_guild_task_award
+{
+	
+}
+
+// 帮派技能
+message sGuildSkill
+{
+	optional int32 id = 1;		// 技能id
+	optional int32 level = 2;	// 技能等级
+	optional int32 exp = 3;		// 当前经验
+}
+
+// 帮派技能信息
+// id = 6743
+message c2s_guild_skill_info
+{
+	
+}
+
+// id = 6744
+message s2c_guild_skill_info
+{
+	repeated sGuildSkill skill_info = 1;	// 技能信息
+}
+
+// 学习帮派技能
+// id = 6745
+message c2s_learn_guild_skill
+{
+	optional int32 id = 1;		// 技能id
+}
+
+// id = 6746
+message s2c_learn_guild_skill
+{
+	optional sGuildSkill skill = 1;
+}
+
+message sGuildMemberLog
+{
+	optional int32 flag = 1;	// 类型 1、加入帮派2、离开帮派3、捐献金钱
+	optional string name = 2; 	// 玩家名称
+	optional sCommonAward contribute = 3;	// 如果flag为3表示捐献的道具
+	optional int32 time = 4;	// 时间
+}
+
+// 获取成员动态
+// id = 6747
+message c2s_guild_member_log
+{
+	
+}
+
+// id = 6748
+message s2c_guild_member_log
+{
+	repeated sGuildMemberLog log = 1;	// 动态
+}
+
+// 福利领取状态
+// id = 6749
+message c2s_guild_welfare_state
+{
+	
+}
+
+// id = 6750
+message s2c_guild_welfare_state
+{
+	optional int32 is_get = 1;		// 是否领取，0表示未领取，非零表示已经领取
+}
+
+// 帮派信息发生变化
+// id = 6752
+message s2c_guild_info_change_ntf
+{
+	optional int32 type = 1;		// 哪些发生了变化,1帮派信息发生变化, 2成员,3我的信息发生变化,4玩家加入帮派
+}
+
+// 我的帮派信息
+// id = 6753
+message c2s_my_guild_info
+{
+	
+}
+
+// id = 6754
+message s2c_my_guild_info
+{
+	optional sGuildMember info = 1;		// 我的信息
+	optional int32 my_valid_contribute = 2;	// 我的有效贡献
+}
+
+message sGuildTreasure
+{
+	optional int32 index = 1;			// 宝藏的下标
+	optional int32 assist_num = 2;		// 援助者的数量
+	optional int32 left_seconds = 3;	// 剩余时间
+	optional int32 grade = 4;			// 宝藏的等级
+	optional sGuildMember owner = 5;	// 宝藏的主人
+	repeated sGuildMember assistant= 6;	// 援助玩家
+}
+
+// 获取玩家家族宝藏信息
+// id = 6771
+message c2s_guild_actor_treasure_info
+{
+	
+}
+
+// id = 6772
+message s2c_guild_actor_treasure_info
+{
+	optional int32 treasure_grade = 1;				// 当前宝藏的等级
+	repeated sGuildTreasure digging_treasure = 2; 	// 正在挖掘的宝藏
+	optional int32 left_time = 3;					// 剩余挖宝次数
+}
+
+// 获取家族宝藏列表
+// id = 6773
+message c2s_guild_treasure_list
+{
+	
+}
+
+// id = 6774
+message s2c_guild_treasure_list
+{
+	repeated sGuildTreasure treasure_list = 1; 	// 当前家族成员的挖宝列表
+	optional int32 left_assist_time = 2;		// 剩余协助次数
+	optional string name = 3;					// 当前协助玩家的名字
+}
+
+// 提升宝藏的品质
+// id = 6775
+message c2s_guild_treasure_gradeup
+{
+	
+}
+
+// id = 6776
+message s2c_guild_treasure_gradeup
+{
+	optional int32 grade = 1;			// 升级后的等级
+}
+
+// 挖宝
+// id = 6777
+message c2s_guild_treasure_dig
+{
+	
+}
+
+// id = 6778
+message s2c_guild_treasure_dig
+{
+	optional int32 index = 1; 			// 宝藏的索引
+}
+
+// 援助
+// id = 6779
+message c2s_guild_treasure_assist
+{
+	optional fixed32 actor_id = 1;		// 协助哪个玩家
+	optional int32 index = 2;			// 该玩家宝藏的下标
+}
+
+// id = 6780
+message s2c_guild_treasure_assist
+{
+	
+}
+
+// 领取宝藏奖励
+// id = 6781
+message c2s_guild_treasure_award
+{
+	optional int32 index = 1;			// 宝藏的下标
+}
+
+// id = 6782
+message s2c_guild_treasure_award
+{
+	optional int32 index = 1;			// 宝藏的下标
+}
+
+// 家族宝藏援助列表
+// id = 6783
+message c2s_guild_treasure_assist_list
+{
+	
+}
+
+// id = 6784
+message s2c_guild_treasure_assist_list
+{
+	repeated sGuildTreasure list = 1;	
+}
+
+// 领取宝藏援助奖励
+// id = 6785
+message c2s_guild_treasure_assist_award
+{
+	optional int32 index = 1;		// 援助列表的索引 
+}
+
+// id = 6786
+message s2c_guild_treasure_assist_award
+{
+	optional int32 index = 1;		// 援助列表的索引
+}
+
+// 邀请协助
+// id = 6787
+message c2s_guild_treasure_invite_assist
+{
+	optional int32 index = 1;				// 哪个位置的宝藏
+}
+
+// id = 6788
+message s2c_guild_treasure_invite_assist
+{
+	
+}
+
+// 获取神兽信息
+// id = 6801
+message c2s_guild_beast_info
+{
+
+}
+
+// id = 6802
+message s2c_guild_beast_info
+{
+	optional int32 level = 1;			// 神兽等级
+	optional int32 exp = 2;				// 神兽经验
+	optional int32 satisfaction = 3; 	// 满意度
+	optional int32 fuben_time = 4;		// 幻象挑战次数
+	optional int32 is_summon = 5;		// 今天是否召唤，0未召唤，非0召唤
+	optional int32 summon_time = 6;		// 召唤次数
+}
+
+// 喂养神兽
+// id = 6803
+message c2s_guild_beast_feed
+{
+	
+}
+
+// id = 6804
+message s2c_guild_beast_feed
+{
+	optional int32 exp = 1;			// 喂养后的经验
+	optional int32 satisfaction = 2;// 满意度
+}
+
+// 神兽升级
+// id = 6805
+message c2s_guild_beast_levelup
+{
+	
+}
+
+// id = 6806
+message s2c_guild_beast_levelup
+{
+	optional int32 level = 1;		// 升级后的等级
+	optional int32 exp = 2;			// 升级后的经验
+}
+
+// 召唤神兽
+// id = 6807
+message c2s_guild_beast_summon
+{
+	
+}
+
+// id = 6808
+message s2c_guild_beast_summon
+{
+	
+}
+
+// 打家族神兽副本
+// id = 6821
+message c2s_guild_beast_fuben_play
+{
+	
+}
+
+// id = 6822
+message s2c_guild_beast_fuben_play
+{
+	
+}
+
+// 获取家族神兽实体信息
+// id = 6823
+message c2s_guild_beast_entity
+{
+	
+}
+
+// 提交神兽副本伤害
+// id = 6825
+message c2s_guild_beast_fuben_damage
+{
+	optional int32	damage			= 1;	//对boss造成的伤害
+	optional int32	dir				= 2;	//方向
+	optional int32 	skill_id		= 3;	//技能id或buffid
+	optional int32	strikes_flag	= 4;	//是否产生了暴击
+	optional int32	level			= 5;	//技能或buff等级
+}
+
+// 玩家死亡
+//id = 6827
+message c2s_guild_beast_fuben_actor_death
+{
+	
+}
+
+// 玩家复活
+// id = 6829
+message c2s_guild_beast_fuben_actor_revive
+{
+	
+}
+
+// id = 6830
+message s2c_guild_beast_fuben_actor_revive
+{
+	
+}
+
+// 神兽的血量
+// id = 6832
+message s2c_guild_beast_hp
+{
+	optional int64 handle	= 1;	//实体的handle
+	optional int32 hp		= 2;	//boss血量
+	optional int32 max_hp	= 3;	//boss最大血量
+}
+
+message sGuildBeastFubenRank
+{
+	optional string actor_name = 1;	// 玩家名字
+	optional int32 total_damage = 2;// 伤害
+}
+
+// 请求家族神兽副本伤害排行
+// id = 6833
+message c2s_guild_beast_fuben_rank
+{
+}
+
+// 家族神兽副本的伤害排行
+// id = 6834
+message s2c_guild_beast_fuben_rank
+{
+	repeated sGuildBeastFubenRank rank_list = 1;
+}
+
+
+// 神兽死亡
+// id = 6836
+message s2c_guild_beast_death
+{
+	optional int32 handle = 1;		// 实体句柄
+}
+
+//玩家对boss造成的总伤害
+// id = 6838
+message s2c_guild_beast_actor_damage
+{
+	optional int32 damage = 1;	//玩家对boss造成的总伤害
+}
+
+
+// 防守玩家
+message sDefender
+{
+	optional fixed32 actor_id = 1;		// 玩家id
+	optional string name = 2;			// 玩家名字
+	optional int32 level = 3;			// 等级
+	optional int32 vip_level = 4;		// vip等级
+	optional int32 is_month_card = 5;	// 0不是，非0是
+	optional int32 power = 6;			// 战力
+	optional int32 hp = 7;				// 剩余生命值
+}
+
+// 城池
+message sCity
+{
+	optional int32 city_id = 1;				// 城池id
+	optional int32 state = 2;				// 状态
+	optional int32 occupy_award_seconds = 3;// 占领奖励结算剩余时间
+	optional int32 protect_seconds = 4;		// 保护时间
+	optional int32 boss_hp = 5;				// boss的血量
+	optional int32 owner_guild_name = 6;	// 所属家族名称
+	repeated sDefender defender = 7;		// 防守者
+}
+
+// 请求领地战活动信息
+// id = 6851
+message c2s_city_siege_info
+{
+	
+}
+
+// id = 6852
+message s2c_city_siege_info
+{
+	optional int32 end_seconds = 1;			// 结束时间，为0表示活动结束
+}
+
+// 获取领地战，我的相关数据
+// id = 6853
+message c2s_city_siege_my_info
+{
+	
+}
+
+// id = 6854
+message s2c_city_siege_my_info
+{
+	optional int32 region_id = 1;				// 战区id,如果为0，则该家族没有分配战区，不需要读取以下4个字段
+	optional int32 revive_time = 2;				// 复活次数
+	optional int32 revive_time_recover_cd = 3;	// 复活次数恢复时间
+	optional int32 attack_time = 4;				// 攻击次数
+	optional int32 attack_time_recover_cd = 5;	// 攻击次数恢复时间
+}
+
+// 获取战区城池信息
+// id = 6855
+message c2s_city_siege_all_city_info
+{
+}
+
+// id = 6856
+message s2c_city_siege_all_city_info
+{
+	repeated sCity city = 1;				// 城池
+}
+
+// 获取单个城池的信息
+// id = 6857
+message c2s_city_siege_one_city_info
+{
+	optional int32 city_id = 1;				// 城池id
+}
+
+// id = 6858
+message s2c_city_siege_one_city_info
+{
+	optional sCity city = 1;				// 城池信息
+}
+
+// 攻击中立城池
+// id = 6859
+message c2s_city_siege_attack_boss
+{
+	optional int32 city_id = 1;				// 城池id
+}
+
+// 获取中立城池boss实体信息
+// id = 6861
+message c2s_city_siege_boss_entity
+{
+	optional int32 city_id = 1;
+}
+
+// 提交中立城池boss副本的伤害 
+// id = 6863
+message c2s_city_siege_boss_fuben_damage
+{
+	optional int32	damage			= 1;	//对boss造成的伤害
+	optional int32	dir				= 2;	//方向
+	optional int32 	skill_id		= 3;	//技能id或buffid
+	optional int32	strikes_flag	= 4;	//是否产生了暴击
+	optional int32	level			= 5;	//技能或buff等级
+}
+
+// 玩家死亡
+//id = 6865
+message c2s_city_siege_boss_fuben_actor_death
+{
+	
+}
+
+// 玩家复活
+// id = 6867
+message c2s_city_siege_boss_fuben_actor_revive
+{
+	
+}
+
+// id = 6868
+message s2c_city_siege_boss_fuben_actor_revive
+{
+	
+}
+
+// 城池boss的血量
+// id = 6870
+message s2c_city_siege_boss_hp
+{
+	optional int64 handle	= 1;	//实体的handle
+	optional int32 hp		= 2;	//boss血量
+	optional int32 max_hp	= 3;	//boss最大血量
+}
+
+message sCitySiegeBossFubenRank
+{
+	optional int32 guild_name = 1;	// 玩家名字
+	optional int32 total_damage = 2;// 伤害
+}
+
+// 请求城池的伤害排行
+// id = 6871
+message c2s_city_siege_boss_fuben_rank
+{
+	optional int32 city_id = 1;		// 城池id
+}
+
+// 城池的伤害排行
+// id = 6872
+message s2c_city_siege_boss_fuben_rank
+{
+	repeated sCitySiegeBossFubenRank rank_list = 1;
+}
+
+
+// 城池boss死亡
+// id = 6874
+message s2c_city_siege_boss_death
+{
+	optional int32 handle = 1;		// 实体句柄
+}
+
+// 城池状态发生变化
+message s2c_city_siege_city_state_change
+{
+	optional int32 city_id = 1;		// 城池id
+}
+
+// 游戏服务器协议 - 商城系统 7401-7500
+
+//import "gs_common.proto";
+
+//package pb_gs_mall;
+
+// 商城：限制购买信息
+message sMallLimitInfo
+{
+	optional uint32 goodsid = 1;			// 商品id
+	optional uint32 buytimes = 2;			// 已购买的次数
+}
+
+// 随机商城：限制购买信息
+message sMallRandInfo
+{
+	optional uint32 itemid = 1;				// 物品id
+	optional uint32 itemnum = 2;			// 数量
+	optional sCommonAward money = 3;		// 货币信息（tp,id,n） 
+	optional uint32 discount = 4;			// 折扣（1-100）
+	optional uint32 attr_scale = 5;			// 随机属性比例（1-100）
+	optional uint32 buytimes = 6;			// 已购买的次数（目前只能购买一次）
+}
+
+// 商城：请求基础数据
+// id = 7401
+message c2s_mall_base_info
+{
+}
+
+// 商城：下发基础数据
+// id = 7402
+message s2c_mall_base_info
+{
+	repeated sMallLimitInfo limitlist = 1;	// 限制列表
+}
+
+// 商城：购买
+// id = 7403
+message c2s_mall_buy
+{
+	optional uint32 goodsid = 1;			// 商品id
+	optional uint32 count = 2;				// 购买数量
+	optional uint32 mall_type = 3;			// 商店类型 0自动购买 1道具商店 2竞技商店 3随机商店
+}
+
+// 商城：购买返回
+// id = 7404
+message s2c_mall_buy
+{
+	optional uint32 mall_type = 1;			// 商店类型 0自动购买 1道具商店 2竞技商店 3随机商店
+	repeated sMallLimitInfo limitlist = 2;	// 限制列表
+}
+
+// 随机商城：请求基础数据
+// id = 7405
+message c2s_mall_rand_info
+{
+}
+
+// 随机商城：下发基础数据
+// id = 7406
+message s2c_mall_rand_info
+{
+	repeated sMallRandInfo randlist = 1;	// 随机列表
+	optional uint32 seconds = 2;			// 剩余的刷新时间（单位：秒）
+}
+
+// 随机商城：购买
+// id = 7407
+message c2s_mall_rand_buy
+{
+	optional uint32 index = 1;				// 栏位索引（从1开始）
+}
+
+// 随机商城：购买返回
+// id = 7408
+message s2c_mall_rand_buy
+{
+	optional uint32 index = 1;				// 栏位索引（成功后有值 从1开始）
+}
+
+// 随机商城：刷新
+// id = 7409
+message c2s_mall_rand_refresh
+{
+}
+
+// 商城：下发小红点
+// id = 7410
+message s2c_mall_rand_refresh
+{
+}
+
+
+
+// 游戏服务器协议 - 交易系统 7501-7600
+
+//package pb_gs_trade;
+
+
+
+// 游戏服务器协议 - 寄卖系统（拍卖行） 7601-7700
+
+//package pb_gs_auctionroom;
+
+
+
+// 游戏服务器协议 - VIP系统 7701-7800
+
+//import "gs_common.proto";
+
+//package pb_gs_vip;
+
+// 请求基础数据
+// id = 7701
+message c2s_vip_base_info
+{
+}
+
+// 下发基础数据
+// id = 7702
+message s2c_vip_base_info
+{
+	optional int32 viplevel = 1;				// vip等级（0级不是vip）
+	optional int32 vipexp = 2;					// vip经验
+	repeated int32 award_state = 3;				// 礼包领取状态（1已领取 0未领取）
+	optional uint32 usetimes = 4;				// 神魔令总已使用次数
+}
+
+// 领取礼包
+// id = 7703
+message c2s_vip_get_award
+{
+	optional int32 level = 1;					// 领取某个等级的（和viplevel对应）
+}
+
+// 查询月卡基础信息
+// id = 7705
+message c2s_monthcard_base_info
+{
+}
+
+// 下发月卡基础信息
+// id = 7706
+message s2c_monthcard_base_info
+{
+	optional uint32 deadline = 1;				// 过期时间，MiniTime（从2010-1-1 00:00:00 开始的秒数） <=0 已过期
+	optional int32 award_state = 2;				// 礼包领取状态（1已领取 0未领取）
+}
+
+// 领取月卡礼包
+// id = 7707
+message c2s_monthcard_get_award
+{
+}
+
+// 开启神魔令结果
+// id = 7710
+message s2c_vip_open_ghostitem
+{
+	repeated sCommonAward awards = 1;			// 通用奖励结构,多个道具
+	optional uint32 usetimes = 2;				// 神魔令已使用次数
+}
+
+// 查询终身卡基础信息
+// id = 7711
+message c2s_eternal_card_base_info
+{
+}
+
+// 下发月卡基础信息
+// id = 7712
+message s2c_eternal_card_base_info
+{
+	optional int32 is_buy = 1;					// 是否购买,0表示未购买，非0表示已经购买
+	optional int32 award_state = 2;				// 礼包领取状态（0未领取,非0表示已领取）
+}
+
+
+// 领取月卡礼包
+// id = 7713
+message c2s_eternal_card_get_award
+{
+}
+
+// 游戏服务器协议 - 成就系统 8001-8100
+
+//package pb_gs_achievement;
+//import "gs_common.proto";
+message sAchievement
+{
+	optional int32 id		= 1;		// 成就id
+	optional int32 progress = 2;		// 当前进度
+}
+
+// 请求成就信息
+// id = 8001
+message c2s_achievement_info
+{
+	
+}
+
+// id = 8002
+message s2c_achievement_info
+{
+	repeated sAchievement progress_list = 1;	// 当前进度列表
+	optional int32 level = 2;					// 成就等级
+	optional int32 point = 3;					// 当前成就点
+}
+
+// 领取成就
+// id = 8003
+message c2s_receive_achievement
+{
+	optional int32 id = 1;			// 领取的成就id
+}
+
+// id = 8004
+message s2c_receive_achievement
+{
+	optional int32 id = 1;			// 领取的成就id
+	optional int32 point = 2;		// 成就点
+}
+
+// 升级成就
+// id = 8005
+message c2s_achievement_levelup
+{
+	
+}
+
+// id = 8006
+message s2c_achievement_levelup
+{
+	optional int32 level = 1;		// 等级
+	optional int32 point = 2;		// 成就点
+}
+
+//
+// id = 8008
+message s2c_achievement_finish_ntf
+{
+}
+
+//
+// 
+
+// 游戏服务器协议 - 称号系统 8101-8200
+
+//package pb_gs_title;
+
+// 称号数据 
+message sTitleInfo
+{
+	optional int32 title_id = 1;			// 称号id
+	optional sint32 remain_time = 2;		// 剩余时间（单位小时，-1代表永久）
+}
+
+// 请求称号数据
+// id = 8101
+message c2s_get_title_info
+{
+}
+
+// 下发称号数据
+// id = 8102
+message s2c_get_title_info
+{
+	optional sint32 result = 1;				// 结果（0成功 成功时后面字段才有值）
+	repeated sTitleInfo titles = 2;			// 已激活的称号列表数据
+	repeated int32 title_ids = 3;			// 使用中的称号id列表
+}
+
+// 激活称号
+// id = 8103
+message c2s_active_title
+{
+	optional int32 title_id = 1;			// 称号id
+}
+
+// 激活称号返回
+// id = 8104
+message s2c_active_title
+{
+	optional sint32 result = 1;				// 结果（0成功 成功时后面字段才有值）
+	optional int32 title_id = 2;			// 激活的称号id
+}
+
+// 使用称号
+// id = 8105
+message c2s_use_title
+{
+	optional int32 title_id = 1;			// 称号id
+}
+
+// 使用称号返回
+// id = 8106
+message s2c_use_title
+{
+	optional sint32 result = 1;				// 结果（0成功 成功时后面字段才有值）
+	optional int32 title_id = 2;			// 使用中的称号id
+	optional int32 old_id = 3;				// 被替换的称号id
+}
+
+// 卸下称号
+// id = 8107
+message c2s_takeoff_title
+{
+	optional int32 title_id = 1;			// 称号id
+}
+
+// 卸下称号返回
+// id = 8108
+message s2c_takeoff_title
+{
+	optional sint32 result = 1;				// 结果（0成功 成功时后面字段才有值）
+	optional int32 title_id = 2;			// 卸下的称号id
+}
+
+
+// 游戏服务器协议 - 排行榜 8201-8300
+
+//import "gs_common.proto";
+
+//package pb_gs_rank;
+
+/*
+// 排行榜类型
+enum eRankType
+{
+	rtNone = 0,
+	rtFightRank = 1,			// 战力排行
+	rtLevelRank = 2,			// 等级排行
+	rtShenbingRank = 3,			// 神兵排行
+	rtZhanjiaRank = 4,			// 战甲排行
+	rtWingRank = 5,				// 翅膀排行
+	rtPetRank = 6,				// 宠物排行
+	rtWuhunRank = 7,			// 武魂排行
+	rtForceWarRank = 8,			// 遭遇战排行
+	rtRecvFlowers  = 9,			// 收花排行（魅力榜）
+	rtSendFlowers = 10,			// 送花排行（情义榜）
+	rtMainThread = 11,			// 主线关卡层数
+	rtYingzongRank = 12,		// 影踪排行
+	rtMax,
+};
+*/
+
+// 排行基础数据 
+message sRankBaseInfo
+{
+	optional int32 index = 1;				// 排名
+	optional fixed32 actor_id = 2;			// 角色id
+	optional int32 vip_level = 3;			// vip等级
+	optional string actor_name = 4;			// 昵称
+	optional uint32 rank_value = 5;			// 排行的值（等级、战力、积分等）
+	optional int32 stege = 6; 				// 当前阶数（神兵、战甲、翅膀、宠物有效）
+	repeated int32 title_ids = 7;			// 称号id列表
+	optional int32 level = 8;				// 等级
+}
+
+// 排行外观数据 
+message sRankApperInfo
+{
+	optional uint32 wing_stage = 1;		// 翅膀等级
+	optional uint32 shenbing_stage = 2;	// 神兵等级
+	optional uint32 zhanjia_stage = 3;	// 战甲等级
+	optional uint32 job = 4;			// 职业
+	optional uint32 sex = 5;			// 性别
+	optional uint32 fight = 6;			// 总战力
+	repeated int32 title_ids = 7;		// 称号id列表
+}
+
+// 请求排行榜基础数据
+//id=8201
+message c2s_get_rank_base_info
+{
+	optional int32 rank_type = 1; 	// 排行榜类型
+	optional int32 from_index = 2; 	// 名次起始
+	optional int32 to_index = 3; 	// 名次终止
+}
+
+// 下发排行榜基础数据
+//id=8202
+message s2c_get_rank_base_info
+{
+	optional int32 rank_type = 1; 			// 排行榜类型
+	repeated sRankBaseInfo infos = 2;		// 排行榜列表数据
+	
+	optional int32 my_rank = 3; 			// 我的排名（-1代表未上榜）
+	optional uint32 my_rank_value = 4;		// 我的排行的值（等级、战力、积分等）
+	
+	optional sRankApperInfo apper_1st = 5;		// 第一名的外观属性
+}
+
+// 查看排行榜详细数据
+//id=8203
+message c2s_get_rank_detail_info
+{
+	optional fixed32 actor_id = 1;			// 角色id
+	optional int32 rank_type = 2; 			// 排行榜类型
+	optional int32 client_param = 3;		// 客户端参数
+}
+
+// 下发排行榜详细数据
+//id=8204
+message s2c_get_rank_detail_info
+{
+	optional sint32 result = 1;							// 结果（0成功，成功时后面字段才有值）
+	optional fixed32 actor_id = 2;						// 角色id
+	repeated sEquipInfo equips = 3;						// 装备信息
+	repeated sEnhanceLevelInfo enhances = 4;			// 当前强化等级，从第一个部位开始排序
+	repeated sCuilianLevelInfo cuilians = 5;			// 当前淬炼等级，从第一个部位开始排序
+	repeated sCountermarkInfo slot_info = 6;			// 圣物部位的刻印等级信息
+	repeated sEquipJewel jewels = 7;					// 宝石镶嵌信息
+	optional int32 wuhun_level = 9; 					// 武魂的等级(flag = 1,2,3显示)
+	optional int32 wuhun_grade = 10; 					// 武魂的阶层(flag = 1,2,3显示)
+	optional int32 wuhun_power = 11; 					// 武魂的战力
+	optional mid_creature creature_data = 12;			// 生物的属性
+	optional sRankApperInfo apper_data = 13;			// 外观属性
+
+	optional sSystemInfo	shenbing_info	= 14;		// 神兵信息
+	optional sSystemInfo	zhanjia_info	= 15;		// 战甲信息
+	optional sSystemInfo	wing_info		= 16;		// 翅膀信息
+	optional sSystemInfo	pet_info		= 17;		// 侍女信息
+	repeated sCommonAttribute wuhun_attr 	= 18;		// 当前的属性，如果没有，表示激活新的阶层(flag = 2,3显示)
+
+	optional string			name			= 19;		// 玩家的名字
+
+	repeated sMingwen 		mingwen_info 	= 20;		// 铭文信息
+
+	optional int32 			rank_type 		= 21; 		// 排行榜类型
+	optional int32 			rank_index 		= 22; 		// 玩家的排名（-1代表未上榜）
+
+	repeated sFabaoInfo 	fabaos 			= 23;		// 法宝信息
+	repeated sZhuling 		zhulings 		= 24;		// 注灵信息
+	optional sSystemInfo	yingzong_info	= 25;		// 影踪信息
+	optional int32 			client_param 	= 26;		// 客户端参数
+	optional int32 			wuhun_suit_level= 27;		// 武魂套装等级
+}
+
+// 排行榜刷新了
+//id=8205
+message s2c_rank_update
+{
+}
+
+
+// 请求膜拜数据
+//id=8207
+message c2s_get_mb_info
+{
+}
+
+// 下发膜拜数据
+//id=8208
+message s2c_get_mb_info
+{
+	repeated int32 mb_times = 1;		// 今日已膜拜次数 0未膜拜
+	repeated int32 rank_count = 2;		// 排行榜人数 
+}
+
+// 膜拜操作
+//id=8209
+message c2s_rank_mb_opt
+{
+	optional int32 rank_type = 1; 	// 排行榜类型
+}
+
+// 膜拜操作结果
+//id=8210
+message s2c_rank_mb_opt
+{
+	optional int32 rank_type = 1; 			// 排行榜类型
+	optional int32 mb_times = 2;			// 今日已膜拜次数 0未膜拜
+}
+
+
+// 游戏服务器协议 - 副本系统 10001-12000
+//import "gs_common.proto";
+
+//package pb_gs_fuben;
+
+//单个副本信息
+message mid_one_fuben_info
+{
+	optional int32 fuben_id		= 1;	//副本id
+	optional int32 play_num		= 2;	//已打次数
+	optional int32 push_num		= 3;	//已扫荡次数
+	optional int32 flag			= 4;	//是否已打通关(0:未打通 1:已打通)
+}
+
+
+//10001 请求副本信息
+// id = 10001
+message c2s_fuben_info
+{
+	optional int32 fuben_tp = 1;
+	optional int32 fuben_id = 2;
+}
+
+
+//10002 下发副本信息
+// id = 10002
+message s2c_fuben_info
+{
+	//副本类型(1:普通关卡,2:boss关卡 3:仙境副本 4:个人boss 5:爬塔 6:竞技场 7:遭遇战 8:除魔卫道 9:春风满月 10:妖魔来袭 11:仙界演武 12:组队副本 13:杀戮战场 14:护送飞艇 15:全民魔兽)
+	optional int32 fuben_tp						= 1;	
+	repeated mid_one_fuben_info fuben_num_info	= 2;	//副本次数信息
+	optional int32 fuben_process 				= 3;	//副本进度(爬塔副本为层数)
+	optional int32 reward_process				= 4;	//奖励进度
+	optional int32 record_today					= 5;	//今日记录
+	optional int32 left_time					= 6;	//剩余挑战次数(单线副本，目前用于除魔卫道)
+	optional int32 push_flag					= 7;	//今天是否扫荡过(0未扫荡过 1扫荡过)
+	optional int32 yesterday_process			= 8;	//昨天的进度（爬塔就是昨天的层数）
+	
+}
+
+
+//10003 请求进入副本
+// id=10003
+message c2s_enter_fuben
+{
+	//副本类型(1:普通关卡,2:boss关卡 3:仙境副本 4:个人boss 5:爬塔 6:竞技场 7:遭遇战 8:除魔卫道 9:春风满月 10:妖魔来袭 11:仙界演武 12:组队副本 13:杀戮战场 14:护送飞艇 15:全民魔兽)
+	optional int32 fuben_tp = 1;	
+	optional int32 fuben_id = 2;	//副本id
+}
+
+
+//10004 推送进入副本
+// id=10004
+message s2c_enter_fuben
+{
+	//副本类型(1:普通关卡,2:boss关卡 3:仙境副本 4:个人boss 5:爬塔 6:竞技场 7:遭遇战 8:除魔卫道 9:春风满月 10:妖魔来袭 11:仙界演武 12:组队副本 13:杀戮战场 14:护送飞艇 15:全民魔兽)
+	optional int32 fuben_tp = 1;	
+	optional int32 fuben_id = 2;			//副本id
+	optional int32 gate_id	= 3;			//地图id
+	optional string monster_str = 4;		// 怪物配置字符串
+	optional int32 step = 5;				// 波数，如果为空，则默认从第一波开始，否则为波数-1
+	optional int32 flag = 6[default = 0];	// 是否进入成功（0:成功 1:失败）
+}
+
+//10006 推送退出副本
+// id=10006
+message s2c_exit_fuben
+{
+	optional int32 result = 1;	//是否成功（0失败 1成功 2主动退出）
+	optional int32 reason = 2;	//失败原因（1挑战失败 2超时）
+}
+
+//10007 一波怪刷完
+// id=10007
+message c2s_one_step_monster
+{
+	optional int32 			fuben_tp 		= 1;	//副本类型
+	optional mid_creature	attribute_union = 2;	//属性集合
+	repeated mid_one_damage	damage_union	= 3;	//伤害集合
+	optional int32			attr_add		= 4;	//攻击加成（万分比）
+	optional int32			hp_add			= 5;	//血量加成( 万分比 )	
+}
+
+//奖励单元
+message mid_one_reward
+{
+	optional int32 tp = 1;	//类型（0:道具 1:货币）
+	optional int32 id = 2;	//id（道具id 或 货币id）
+	optional int32 n = 3;	//数量
+}
+
+//10008 下发奖励信息
+// id=10008
+message s2c_send_reward
+{
+	//副本类型(1:普通关卡,2:boss关卡 3:仙境副本 4:个人boss 5:爬塔 6:竞技场 7:遭遇战 8:除魔卫道 9:春风满月 10:妖魔来袭 11:仙界演武 12:组队副本 13:杀戮战场 14:护送飞艇 15:全民魔兽)
+	optional int32 fuben_tp 				= 1;	
+	optional int32 win_success				= 2;	//1胜利 0失败 
+	optional int32 reward_type				= 3;	//奖励类型（0:掉落奖励 1:结算奖励,2:扫荡结算,3:堆叠奖励,打完才领走 4:只看不给）
+	repeated mid_one_reward reward_union	= 4;	//奖励集合
+	optional int32 step						= 5;	//波数
+	optional int32 process					= 6;	//进度(爬塔为层数(暂时只有爬塔的扫荡需要))
+	optional string monster_str				= 7;	//怪物信息的字符串
+	optional int32	star					= 8;	//获得的星数（仙界演武用）
+	optional int32 rank						= 9;	//排名
+	optional int32 kill_flag				= 10;	//是否是击杀者（0不是 1是击杀者）
+	optional string kill_name				= 11;	//击杀者的名字
+	
+	optional int32	old_star				= 12;	//以前的星级
+	optional int32	old_level				= 13;	//以前的等级
+	optional int32	old_division			= 14;	//以前的段位
+}
+
+//10010 下发主线副本boss进度信息
+// id = 10010
+message s2c_main_thread_fuben_boss_info
+{
+	optional int32 curr_process = 1;			//当前进度
+	optional int32 total_process = 2;			//总进度
+}
+
+//10011 副本失败
+// id = 10011
+message c2s_fuben_fail
+{
+	optional int32 fuben_tp = 1;	//副本类型
+}
+
+//10012 主线副本可以开始挑战boss了 
+// id = 10012
+message s2c_main_thread_fuben_play_boss
+{
+}
+
+//10013 请求关卡信息
+// id = 10013
+message c2s_gate_info
+{
+	//副本类型(1:普通关卡,2:boss关卡 3:仙境副本 4:个人boss 5:爬塔 6:竞技场 7:遭遇战 8:除魔卫道 9:春风满月 10:妖魔来袭 11:仙界演武 12:组队副本 13:杀戮战场 14:护送飞艇 15:全民魔兽)
+	optional int32 fuben_tp		= 1;	
+	optional int32 fuben_id		= 2; 	//副本id
+	optional int32 info_type	= 3;	//信息类型（1:小红点相关）
+}
+
+
+
+//章节信息
+message mid_chapter_info
+{
+	optional int32 curr_process		= 1; 	//章节当前进度
+	optional int32 total_process	= 2;	//章节总进度
+	optional string chapter_name	= 3;	//章节名
+	optional string icon_id			= 4;	//icon id
+	optional int32	chapter_id		= 5;	//章节id
+}
+
+//最强玩家信息
+message mid_best_role_info
+{
+	optional string name	=	1;	//玩家的名字
+	optional int32 gk_id	=	2;	//通关的进度
+}
+
+// 副本预览信息
+message mid_fuben_pre_view
+{
+	optional int32 fuben_tp				=	1;	//副本类型
+	optional int32 fuben_id				=	2;	//副本id
+	optional int32 boss_id				=	3;	//boss的id
+	repeated mid_one_reward reward_union =	4;	//奖励预览
+}
+
+
+//10014 下发关卡信息
+// id = 10014
+message s2c_gate_info
+{
+	optional mid_chapter_info		chapter_info	=	1;	//章节信息
+	optional mid_best_role_info		best_role_info	=	2;	//最强玩家信息
+	optional mid_fuben_pre_view		fuben_pre_view	=	3;	//副本预览信息
+	optional int32					info_type		= 	4;	//信息类型（1:小红点相关）
+}
+
+//10015	领取主线关卡章节奖励
+// id = 10015
+message c2s_get_chapter_reward
+{
+}
+
+//10016	领取章节奖励结果
+// id = 10016
+message s2c_chapter_reward_result
+{
+	optional int32 				result			= 1;	//领取奖励的结果(0成功 1奖励已领取过 2还未达到能领取的关卡)
+	optional mid_chapter_info	chapter_info	= 2;	//章节信息
+}
+
+
+//10017 请求副本挑战时间
+// id = 10017
+message c2s_fuben_play_time
+{
+}
+
+// 10018 下发副本挑战时间
+// id = 10018
+message s2c_fuben_play_time
+{
+	optional uint32 play_time_seconds = 1;	//挑战的时间(单位秒)
+}
+
+//10019 请求扫荡
+// id = 10019
+message c2s_push_fuben
+{
+	optional int32 fuben_tp = 1;	//副本类型
+	optional int32 fuben_id = 2;	//副本id
+	optional int32 num 		= 3;	//扫荡的次数
+}
+
+//10021 领取爬塔阶段性奖励
+// id = 10021
+message c2s_get_tower_process_reward
+{
+}
+
+//10024 下发奖励预览
+//id = 10024
+message s2c_fuben_reward_view
+{
+	repeated mid_one_reward reward_union =	1;	//奖励预览
+}
+
+// 10026 战斗开始
+// id = 10026
+message s2c_start_fight
+{
+	optional int32 type = 1;	//类型（同副本类型）
+	optional int32 num	= 2;	//数量（非必须）
+}
+
+
+//请求随机副本信息
+//id = 10031
+message c2s_get_rand_fuben_info
+{
+}
+
+message mid_one_rand_fuben
+{
+	optional int32 id = 1;		//id
+	optional int32 flag = 2;	//是否已被翻开(1:被翻开 0:未被翻开)
+}
+
+//下发随机副本信息
+//id = 10032
+message s2c_get_rand_fuben_info
+{
+	optional int32					play_num			= 1;	//今日已挑战次数
+	optional int32					buy_num				= 2;	//今日已买次数
+	optional int32					get_final_reward	= 3;	//是否已经领取了最终奖励（0:未领取，1已领取）
+	optional int32					picture_id			= 4;	//图片id
+	repeated mid_one_rand_fuben		fuben_info			= 5;	//翻牌详情
+}
+
+//随机副本翻牌
+// id = 10033
+message c2s_rand_fuben_open_card
+{
+	optional int32 card_id = 1;		//id
+}
+
+//牌被翻开
+// id = 10034
+message s2c_card_open
+{
+	repeated mid_one_rand_fuben		fuben_info			= 1;	//翻牌详情
+}
+
+//随机副本购买翻牌次数
+// id = 10035
+message c2s_rand_fuben_buy
+{
+	optional int32 num = 1;		//购买几次
+}
+
+// 随机副本重置
+// id = 10037
+message c2s_rand_fuben_reset
+{
+}
+
+
+// 随机副本领取额外奖励
+// id = 10039
+message c2s_rand_fuben_get_final_reward
+{
+}
+
+// 随机副本买通关(所有的牌全部翻开)
+// id = 10041
+message c2s_rand_fuben_buy_cross
+{
+}
+
+// 10051-10060 除魔卫道排行榜
+message sSaveWorldRankItem
+{
+	optional fixed32 actor_id = 1;		// 角色id
+	optional string name = 2;			// 名字
+	optional int32 power = 3;			// 战力
+	optional int32 stage = 4;			// 关卡数
+	optional int32 vip_level = 5;		// vip等级
+	optional int32 month_card = 6;		// 月卡，0不是月卡用户，非0是月卡用户
+}
+// id = 10051
+message c2s_save_world_fuben_rank
+{
+	
+}
+
+// id = 10052
+message s2c_save_world_fuben_rank
+{
+	repeated sSaveWorldRankItem rank = 1; // 自己的排名，根据这个数据结构取
+}
+
+//10101 - 10200 切磋占用
+
+//请求切磋信息
+// id = 10101
+message c2s_pk_together_info
+{
+	optional fixed32 actor_id = 1;	//(如果是要获得自己的就不用发过来)	
+}
+
+message mid_pk_gether_actor_simple_info
+{
+	optional int32 fight_value	= 1;	//战力
+	optional fixed32 actor_id	= 2;	//角色id
+	optional string	actor_name	= 3;	//名字
+	optional int32	icon_id		= 4;	//
+	optional int32	pk_rank		= 5;	//竞技场名次(0 表示不在榜上)
+	optional int32	month_card	= 6;	//月卡
+	optional int32	vip_level	= 7;	//vip等级
+}
+
+//下发切磋信息
+// id = 10102
+message s2c_pk_together_info
+{
+	//如果是下发自己的切磋信息，就只有这个字段
+	optional int32 								win_num		= 1;	//胜利次数
+	
+	optional mid_pk_gether_actor_simple_info	enemy_info	= 2;
+}
+
+//请求切磋
+// id = 10103
+message c2s_pk_together_invite
+{
+	optional int32		tp			= 1;	//切磋类型（0:邀请挑战 1:全服挑战）
+	optional fixed32	actor_id	= 2;	//被挑战玩家的id
+}
+
+//发送切磋邀请成功
+// id = 10104
+message s2c_pk_together_invite
+{
+	optional int32	tp = 1;//切磋类型（0:邀请挑战 1:全服挑战）
+}
+
+// 收到切磋邀请
+// id = 10106
+message s2c_pk_together_receive_invite
+{
+	optional int32 								win_num		= 1;	//胜利次数
+	optional mid_pk_gether_actor_simple_info	enemy_info	= 2;	
+}
+
+// 接收切磋邀请
+// id = 10107
+message c2s_pk_together_req
+{
+	optional int32	tp				= 1;	//切磋类型（0:邀请挑战 1:全服挑战）
+	optional fixed32	actor_id	= 2;	//角色id
+}
+
+// 切磋匹配成功
+// id = 10108
+message s2c_pk_together_req
+{
+	optional int32 								win_num		= 1;	//胜利次数
+	optional mid_pk_gether_actor_simple_info	enemy_info	= 2;	
+}
+
+// 取消切磋匹配
+// id = 10109
+message c2s_pk_together_cancel
+{
+}
+
+// 取消切磋匹配成功
+// id = 10120
+message s2c_pk_together_cancel
+{
+}
+
+// 请求切磋对手信息
+// id = 10121
+message c2s_pk_together_enemy_entity
+{
+}
+
+
+//10101 - 10200 切磋占用
+
+
+//12101 - 12150 仙界演武占用
+// 请求仙界演武信息
+//id = 12101
+message c2s_god_world_fuben_info
+{
+}
+
+// 下发仙界演武信息
+//id = 12102
+message s2c_god_world_fuben_info
+{
+	optional int32 opened		= 1;	//是否开启(0:未开启 1:已开启)
+	optional int32 play_num		= 2;	//挑战次数
+	optional int32 cd			= 3;	//多久之后恢复次数
+	optional int32 buy_num		= 4;	//今日已购买次数
+	optional int32 division		= 5;	//段位
+	optional int32 level		= 6;	//段位里面的等级
+	optional int32 exp			= 7;	//经验
+	optional int32 in_win_num	= 8;	//连胜场次
+	
+	optional int32 win_num		= 9;	//胜利场次
+	optional int32 fail_num		= 10;	//失败场次
+	
+	optional int32 rank			= 11;	//排名（-1表示未上榜）
+	optional int32 reward_flag	= 12;	//可领取的段位奖励(0表示没有奖励可领取 取决于上一期的段位)
+	optional int32 flag 		= 13;	//领取额外奖励的信息（0未领取 1已领取 2不能领取）
+}
+
+//请求仙界演武匹配
+// id = 12103
+message c2s_god_world_match
+{
+}
+
+message mid_god_world_person
+{
+	optional fixed32	actor_id	= 1;	//角色id
+	optional int32	icon_id			= 2;	//玩家icon id
+	optional int32	division		= 3;	//玩家的段位
+	optional int32	level			= 4;	//玩家的段位等级
+	optional int32	relation		= 5;	//关系（1友方 2敌方）
+	optional string	name			= 6;	//玩家的名字
+}
+
+//下发仙界演武匹配结果
+// id = 12104
+message s2c_god_world_match
+{
+	repeated mid_god_world_person person_list = 1;	//玩家列表
+}
+
+//请求仙界演武战斗
+// id = 12105
+message c2s_god_world_play
+{
+}
+
+//请求仙界演武玩家信息
+//id = 12107
+message c2s_god_world_enemy
+{
+}
+
+// 仙界演武购买次数
+// id = 12109
+message s2c_god_world_buy
+{
+	optional int32 num = 1;	//购买次数
+}
+
+// 领取仙界演武段位奖励
+// id = 12111
+message c2s_god_world_get_division_reward
+{
+	optional int32 tp = 1;	//领取类型（0:普通奖励 1:钻石额外奖励）
+}
+
+
+// 请求仙界演武排行榜
+// id = 12113
+message c2s_god_world_rank
+{
+	optional int32 start_rank = 1;	//起始排名
+	optional int32 end_rank	= 2;	//终止排名
+}
+
+message one_god_world_rank
+{
+	optional int32	rank_id		= 1;	//排名
+	optional int32	division	= 2;	//段位
+	optional int32	level		= 3;	//段位的等级
+	optional int32	win_stright	= 4;	//净胜场次
+	optional string	name		= 5;	//玩家的名字
+}
+
+// 下发仙界演武排行榜
+// id = 12114
+message s2c_god_world_rank
+{
+	repeated one_god_world_rank rank_list = 1;	//排行信息
+}
+
+// 请求上期的仙界演武排行
+// id = 12115
+message c2s_last_god_world_rank
+{
+}
+
+// 下发上期的仙界演武排行
+// id = 12116
+message s2c_last_god_world_rank
+{
+	repeated one_god_world_rank rank_list	= 1;	//排行信息
+}
+
+//12101 - 12150 仙界演武占用
+
+//请求组队副本详情
+//id = 12151
+message c2s_team_fuben_info
+{
+}
+
+message mid_one_team_fuben
+{
+	optional int32	fuben_id	= 1;	//副本id
+	optional int32	cross_flag	= 2;	//是否已经通关（0未通关 1已通关）
+	
+	optional int32	partner_id	= 3;	//队友的id
+	optional string	name		= 4;	//队友的名字
+	optional int32	icon_id		= 5;	//icon的id
+	optional int32	fight_score	= 6;	//战力
+	
+	optional int32	refresh_num	= 7;	//剩余的刷新次数
+	optional int32	refresh_t	= 8;	//距离下次刷新队友还剩多少秒
+	
+}
+
+//下发组队副本详情
+//id = 12152
+message s2c_team_fuben_info
+{
+	optional int32 play_num						= 1;	//挑战次数
+	optional int32 cd							= 2;	//多久之后恢复次数
+
+	repeated mid_one_team_fuben	fuben_info_list	= 3;	//副本挑战详情
+}
+
+//刷新组队副本队友
+// id = 12153
+message c2s_team_fuben_refresh_partner
+{
+	optional int32 play_num	= 1;	//要刷新的副本id
+}
+
+//发送组队邀请
+// id = 12155
+message c2s_team_fuben_invite
+{
+	optional int32 play_num	= 1;	//要刷新的副本id
+	optional int32 type = 2;		//1表示世界邀请2家族邀请
+}
+
+//接收组队邀请
+// id = 12157
+message c2s_team_fuben_invitation_req
+{
+	optional string name		= 1;		//邀请者的名字
+	optional int32	fuben_id	= 2;		//要进入的副本
+}
+
+//组队完成
+// id = 12158
+message s2c_team_fuben_invitation_result
+{
+	optional int32	partner_id	= 1;	//队友的id
+	optional string	name		= 2;	//队友的名字
+	optional int32	icon_id		= 3;	//icon的id
+	optional int32	fight_score	= 4;	//战力
+}
+
+//请求组队副本队友信息
+//id = 12159
+message c2s_team_fuben_partner_info
+{
+}
+
+
+//取消组队 
+//id = 12161
+message c2s_team_fuben_cancel
+{
+}
+
+//取消组队成功
+//id = 12162
+message s2c_team_fuben_cancel
+{
+}
+
+
+
+//12151 - 12200 组队副本占用
+
+
+
+
+// 游戏服务器协议 - 遭遇战系统 12001-12200
+
+//import "gs_common.proto";
+//package pb_force_fuben;
+
+
+//请求遭遇战信息
+// id = 12001
+message c2s_get_force_fuben_info
+{
+}
+
+//单个副本玩家的信息
+message mid_one_near_person_info
+{
+	optional fixed32		actor_id 	= 1;	//角色id
+	optional int64			handle		= 2;	//角色handle
+	optional int32			level 		= 3;	//等级
+	optional int32			icon_id		= 4;	//icon_id
+	optional int32			sex			= 5;	//性别
+	optional int32 			vocation	= 6;	//职业
+	optional int32			fight_value	= 7;	//战力
+	optional string 		actor_name	= 8;	//角色名
+	
+	optional int32			get_score	= 9;	//挑战胜利获得的积分
+	repeated sCommonAward	award_info	= 10;	//奖励信息
+	
+}
+
+//下发遭遇战信息
+// id = 12002
+message s2c_send_force_fuben_info
+{
+	optional int32			score	= 1;	//积分
+	optional int32			rank 	= 2;	//排名
+	repeated sCommonAward	reward	= 3;	//玩家的排名奖励
+}
+
+//下发遭遇战附近玩家信息
+// id = 12004
+message s2c_send_force_fuben_near_enemy
+{
+	repeated mid_one_near_person_info near_enemy_list	= 1;	//附近的玩家列表
+	optional uint32	time_delay							= 2;	//多久之后刷新下一个玩家
+}
+
+//请求遭遇战最近的战斗信息
+// id = 12005
+message c2s_get_force_fuben_video
+{
+}
+
+// 一场遭遇战的详情
+message mid_one_force_fuben_video
+{
+	optional int32 			success		= 1;	//战斗结果（0失败 1胜利）
+	optional fixed32		enemy_id	= 2;	//敌人的id
+	optional string			name		= 3;	//敌人的名字
+	
+	optional int32			get_score	= 4;	//挑战胜利获得的积分
+	repeated sCommonAward	award_info	= 5;	//奖励信息
+	optional uint32			play_t		= 6;	//挑战时间(短时间戳)
+}
+
+// 下发最近几场遭遇战的情况
+// id = 12006
+message s2c_send_force_fuben_video
+{
+	repeated mid_one_force_fuben_video force_fuben_video_list = 1;
+}
+
+// 刷新对手
+// id = 12007
+message c2s_refresh_force_fuben_enemy
+{
+}
+
+// 挑战对手
+// id = 12009
+message c2s_fight_force_fuben
+{
+	optional fixed32 enemy_id = 1;	//对手id
+}
+
+// 可以开始遭遇战了
+// id = 12010
+message s2c_fight_force_fuben
+{
+	optional fixed32 enemy_id = 1;	//对手id
+}
+
+//请求遭遇战对手信息
+// id = 12011
+message c2s_get_force_fuben_enemy_info
+{
+}
+
+message sForceFubenRevengeLog
+{
+	optional int32 index = 1;			// 下标
+	optional string enemy_name = 2;		// 敌人的名字
+	optional int32 enemy_power = 3;		// 敌人的战力
+	optional int32 enemy_level = 4;		// 敌人的等级
+	optional int32 icon_id = 5;
+	optional int32 is_revenged = 6;		// 是否被复仇过了，0没有，非0复仇过了
+	repeated sEquipInfo equipment = 7;	// 被掠夺装备
+	optional int32 type = 8;			// 1表示抢别人，2表示被抢
+}
+// 请求复仇日志
+// id = 12013
+message c2s_force_fuben_revenge_log
+{
+	
+}
+
+// id = 12014
+message s2c_force_fuben_revenge_log
+{
+	repeated sForceFubenRevengeLog log = 1;	
+}
+
+// 复仇
+// id = 12015
+message c2s_force_fuben_revenge
+{
+	optional int32 revenge_log_index = 1;// 复仇日志的下标
+}
+
+// id = 12016
+message s2c_force_fuben_revenge
+{
+	
+}
+
+// 查看战利品
+// id = 12017
+message c2s_force_fuben_booty_depot
+{
+	
+}
+
+// id = 12018
+message s2c_force_fuben_booty_depot
+{
+	repeated sEquipInfo equipment = 1;	
+}
+
+// 请求敌人的信息
+// id = 12019
+message c2s_force_fuben_enemy_entity
+{
+	optional int32 revenge_log_index = 1;// 复仇日志的下标
+}
+
+// 被人掠夺的通知，新的复仇日志到来
+// id = 12022
+message s2c_force_fuben_revenge_log_ntf
+{
+
+}
+
+// 游戏服务器协议 - 遭遇战系统 12001-12200
+
+//import "gs_common.proto";
+//package pb_world_boss;
+
+message sWorldBossFuben
+{
+	optional int32 fuben_id			= 1;				// boss副本id
+	optional int32 boss_healthy		= 2;				// boss当前血量
+	optional int32 relive_seconds	= 3;				// 多少秒后boss复活，boss_healthy=0的时候才有效
+	optional int32 boss_max_hp		= 4;				// boss总血量
+	optional int32 person_num		= 5;				// 挑战人数
+}
+
+//请求世界boss信息
+// id = 12201
+message c2s_world_boss_info
+{
+	
+}
+
+// 下发世界boss信息
+// id = 12202
+message s2c_world_boss_info
+{
+	repeated sWorldBossFuben fubens     = 1;		//世界boss副本的信息
+	optional uint32 re_play_num			= 2;		//打boss的次数还剩下几次
+	optional uint32 play_time_delay		= 3;		//还剩多久恢复一次次数（单位秒）
+}
+
+// 挑战世界boss
+// id = 12203
+message c2s_play_world_boss
+{
+	optional int32 fuben_id 			= 1;		// 副本id
+}
+
+// 获取世界boss伤害排名
+// id = 12205
+message c2s_world_boss_rank
+{
+	optional int32 fuben_id				= 1;		// 世界副本的id
+}
+
+message sWorldBossRank
+{
+	optional string actor_name 			= 1;		// 玩家姓名
+	optional int32 total_damage			= 2;		// 总伤害
+}
+
+// 下发世界boss伤害排名
+// id = 12206
+message s2c_world_boss_rank
+{
+	repeated sWorldBossRank rank_list   = 1;		// 排名信息
+}
+
+// 玩家请求在世界boss副本原地复活
+// id = 12207
+message c2s_world_boss_relive
+{
+}
+
+// 玩家在世界boss里复活成功
+// id = 12208
+message s2c_actor_relieve
+{
+}
+
+// 玩家在世界boss副本死亡
+// id = 12209
+message c2s_world_boss_actor_death
+{
+}
+
+
+//请求世界boss实体信息
+// id = 12211
+message c2s_get_world_entity
+{
+}
+
+//发送世界boss伤害信息
+// id = 12213
+message c2s_world_boss_damage
+{
+	optional int32	damage			= 1;	//对boss造成的伤害
+	optional int32	dir				= 2;	//方向
+	optional int32 	skill_id		= 3;	//技能id或buffid
+	optional int32	strikes_flag	= 4;	//是否产生了暴击
+	optional int32	level			= 5;	//技能或buff等级
+}
+
+//世界boss受到伤害
+// id = 12214
+message s2c_world_boss_damage
+{
+	optional int64 handle	= 1;	//实体的handle
+	optional int32 hp		= 2;	//boss血量
+	optional int32 max_hp	= 3;	//boss最大血量
+}
+
+
+//世界boss死亡
+// id = 12215
+message s_world_boss_death
+{
+	optional int64 handle	= 1;	//实体的handle
+}
+
+//玩家对boss造成的总伤害
+// id = 12216
+message s_world_boss_actor_damage
+{
+	optional int32 damage = 1;	//玩家对boss造成的总伤害
+}
+
+//请求世界boss通知信息
+// id = 12217
+message c2s_world_boss_notice
+{
+}
+
+//下发世界boss通知信息
+// id = 12218
+message s2c_world_boss_notice
+{
+	repeated int32 level_list = 1;	//世界boss通知信息(下发了等级的表示不用通知)
+}
+
+//设置世界boss通知信息
+// id = 12219
+message c2s_world_boss_change_notice
+{
+	repeated int32 level_list = 1;	//世界boss通知信息(只发不用通知的等级)
+}
+
+
+
+//请求全民魔兽信息
+// id = 12251
+message c2s_world_wow_info
+{
+}
+
+
+message mid_one_wow
+{
+	optional int32 	fuben_id	= 1;	//副本id
+	optional string	name		= 2;	//领主的名字
+	optional int32	hp			= 3;	//boss血量
+	optional int32	max_hp		= 4;	//boss最大血量
+	optional fixed32 master_id	= 5;	//领主id(没有就为0) 
+	optional int32	def			= 6;	//防御
+}
+
+
+//下发全民魔兽信息
+// id = 12252
+message s2c_world_wow_info
+{
+	optional int32 			open_t 		= 1;	//距离活动开始的剩余时间（为0表示活动已开始）
+	repeated mid_one_wow	fuben_list	= 2;	//副本详情
+	optional int32			relive_cd	= 3;	//玩家的复活时间（为0表示未死亡）
+	optional float			attr_def_radio = 4;	// 加防的百分比
+}
+
+//挑战全民魔兽
+// id = 12253
+message c2s_world_wow_play
+{
+	optional int32 fuben_id	= 1;	//副本id
+	optional int32 tp		= 2;	//挑战类型（0普通挑战 1复活挑战）
+}
+
+//请求全民魔兽副本复活
+// id = 12255
+message c2s_world_wow_relive
+{
+	optional int32 tp = 1;	//复活类型（0普通复活 1元宝复活）
+}
+
+//全民魔兽副本复活成功
+// id = 12256
+message s2c_world_wow_relive
+{
+}
+
+//请求全民魔兽实体信息
+// id = 12257
+message c2s_world_wow_entity_info
+{
+}
+
+
+//全民魔兽死亡
+// id = 12258
+message s2c_world_wow_death
+{
+}
+
+
+message world_wow_one_rank
+{
+	optional fixed32 actor_id		= 1;	//角色id
+	optional string	actor_name	= 2;	//玩家名字
+	optional int32	damage		= 3;	//伤害
+	optional int32	rank_id		= 4;	//排名
+}
+
+//请求全民魔兽排名
+// id = 12259
+message c2s_world_wow_rank
+{
+	optional int32	tp			= 1;	//(1上期的排名 2本期的排名)
+	optional int32	fuben_id	= 2;	//副本id
+}
+
+
+//下发全民魔兽排名
+// id = 12260
+message s2c_world_wow_rank
+{
+	optional int32				tp			= 1;	//(1上期的排名 2本期的排名)
+	repeated world_wow_one_rank rank_list	= 2;	//排名信息
+}
+
+//全民魔兽玩家死亡
+// id = 12261
+message c2s_world_wow_actor_death
+{
+}
+
+//玩家对全民魔兽造成的总伤害
+// id = 12262
+message s2c_world_wow_actor_damage
+{
+	optional int32 damage = 1;	//玩家对boss造成的总伤害
+}
+
+//发送全民魔兽伤害信息
+// id = 12263
+message c2s_world_wow_damage
+{
+	optional int32	damage			= 1;	//对boss造成的伤害
+	optional int32	dir				= 2;	//方向
+	optional int32 	skill_id		= 3;	//技能id或buffid
+	optional int32	strikes_flag	= 4;	//是否产生了暴击
+	optional int32	level			= 5;	//技能或buff等级
+}
+
+//下发全民魔兽伤害信息
+// id = 12264
+message s2c_world_wow_damage
+{
+	optional int64 handle	= 1;	//实体的handle
+	optional int32 hp		= 2;	//boss血量
+	optional int32 max_hp	= 3;	//boss总血量
+}
+
+//给全民魔兽加血
+// id = 12265
+message c2s_world_wow_add_hp
+{
+	optional int32 add_tp	= 1;	//加血类型
+	optional int32 fuben_id	= 2;	//副本id
+}
+
+//全民魔兽加血结果
+// id = 12266
+message s2c_world_wow_add_hp
+{
+	optional int64 handle	= 1;	//魔兽的handle
+	optional int32 def		= 2;	//魔兽的防御
+	optional int32 fuben_id	= 3;	//副本id
+}
+
+//全民魔兽护盾出现
+// id = 12268
+message s2c_world_wow_def_apear
+{
+	optional int32 hp		= 1;	//护盾的血量
+	optional int32 max_hp	= 2;	//护盾的血量上限
+	optional int64 handle	= 3;	//魔兽的handle
+}
+
+//全民魔兽的护盾消失
+// id = 12270
+message s2c_world_wow_def_disapear
+{
+	optional int64 handle	= 1;	//魔兽的handle
+}
+
+//进行护盾抽奖
+// id = 12271
+message c2s_world_wow_def_reward
+{
+}
+
+// 获取加防的百分比
+// id = 12273
+message c2s_world_wow_attr_def_radio
+{
+	optional int32 fuben_id = 1;	
+}
+
+
+// 游戏服务器协议 - 常规系统 13001-15000
+//import "gs_common.proto";
+//package pb_gs_activity;
+
+// 开服活动-统一协议（13231 - 13240）
+/*
+-- 开服活动id
+KFActivityId = 
+{
+	KF_LEVEL_ACTIVITY = 1,				-- 1等级活动
+	KF_RECHARGE = 2,					-- 2每日累计充值活动
+	KF_LIMIT_BUY = 3,					-- 3每日限购活动
+	KF_GIFTS = 4,						-- 4超值礼包活动
+	KF_RANK_ACTIVITY = 5,				-- 5冲榜活动/冲榜活动第二版
+	KF_GROWN_FUNK = 6,					-- 6成长基金
+	KF_TOTAL_RECHARGE = 7,				-- 7累计充值
+	KF_RANK_ACHIEVEMENT = 8,			-- 8冲榜成就
+	KF_TOTAL_RECHARGE_ACHIEVEMENT = 9,	-- 9累计充值成就
+}
+*/
+
+// 活动条目数据
+message sActivityOneStatus
+{
+	optional int32 index = 1;			// 条目的索引
+	optional int32 status = 2;			// 条目的状态（0未达成 1可领取 2已领取/已购买次数等）
+	optional int32 status_allsv = 3;	// 条目的全服状态（0未达成 1可领取 2已领取/已购买次数/连续充值天数等）
+}
+// 活动条目配置
+message sActivityOneConfig
+{
+	optional int32 index = 1;			// 条目的索引
+	repeated sCommonAward award = 2;	// 本条目的奖励
+	repeated sCommonAward cost = 3;		// 本条目的消耗
+	optional int32 limit = 4;			// 达成条件（充值数、消费数、购买次数、称号ID等其他数据）
+	optional string gift_name = 5;		// 礼包名字
+	optional string title = 6;			// 条目标题
+	optional int32 level_limit = 7;		// 等级限制
+	optional int32 viplevel_limit = 8;	// VIP等级限制
+	optional int32 limit_allsv = 9;		// 全服配置（限制次数等）/ 配置的模型外观
+}
+
+// 寻宝=============================================
+// id = 13001
+message c2s_treasure_hunt
+{
+	optional int32 time = 1; // 寻宝次数
+}
+// id = 13002
+message s2c_treasure_hunt
+{
+	optional int32 time = 1; // 寻宝次数
+	repeated sCommonAwardEx awards = 2; // 活得的奖励
+}
+
+// 展示寻宝仓库中的奖励
+// id = 13003
+message c2s_show_treasure_hunt_store
+{
+}
+// id = 13004
+message s2c_show_treasure_hunt_store
+{
+	repeated sCommonAward awards = 1;		// 奖励
+	optional sint32 result = 2;				// 结果
+}
+
+// 领取寻宝仓库中的奖励
+// id = 13005
+message c2s_get_treasure_hunt_award
+{
+}
+// id = 13006
+message s2c_get_treasure_hunt_award
+{
+	optional sint32 result = 1[default = 0]; 	// 领取结果，基本上是成功
+}
+
+message sTreasureHuntBroadcast
+{
+	optional string name = 1;		// 玩家名字
+	repeated sCommonAward award = 2;		// 奖励
+}
+
+// 寻宝广播通知
+// id = 13008
+message s2c_treasure_hunt_broadcast_notify
+{
+	optional sTreasureHuntBroadcast broadcasts = 1;	//  叠加在一起的多条广播消息
+}
+
+
+// 请求历史广播
+// id = 13009
+message c2s_get_treasure_hunt_broadcast
+{
+}
+// 返回寻宝历史广播
+// id = 13010
+message s2c_get_treasure_hunt_broadcast
+{
+	repeated sTreasureHuntBroadcast broadcasts = 1;		// 历史广播消息
+}
+
+// 首充=============================================
+// 请求首充信息
+// id = 13011
+message c2s_get_shouchong_info
+{
+}
+// 下发首充信息
+// id = 13012
+message s2c_get_shouchong_info
+{
+	optional int32 days = 1;			// 可领取第几天的奖励
+	repeated int32 states = 2;			// 领取状态：0代表未达成 1代表可领取 2代表已领取
+	optional int32 recharge = 3;		// 充值数
+}
+
+// 领取首充奖励
+// id = 13013
+message c2s_get_shouchong_reward
+{
+	optional int32 index = 1;			// 索引号（从1开始）
+}
+// 领取首充奖励结果
+// id = 13014
+message s2c_get_shouchong_reward
+{
+	optional sint32 result = 1;			// 结果（成功时后面字段才有值）
+}
+
+// 7天登录=============================================
+// 请求7天登录信息
+// id = 13015
+message c2s_get_7day_info
+{
+}
+// 下发7天登录信息
+// id = 13016
+message s2c_get_7day_info
+{
+	optional int32 days = 1;			// 已登录天数
+	repeated int32 states = 2;			// 领取状态：0代表未达成 1代表可领取 2代表已领取
+}
+
+// 领取7天登录奖励
+// id = 13017
+message c2s_get_7day_reward
+{
+	optional int32 index = 1;			// 索引号（从1开始）
+}
+// 领取7天登录奖励结果
+// id = 13018
+message s2c_get_7day_reward
+{
+	optional sint32 result = 1;			// 结果（成功时后面字段才有值）
+}
+
+// 杀戮战场 13100 -- 13180 (这80个先占坑了)
+
+// 玩家信息
+message sPlayerinfo
+{
+	optional fixed32 player_id = 1;     // 角色id
+	optional int32 model_id = 2;      // 模型ID
+	optional string name = 3;         // 玩家名称
+	optional int32 weapon_id = 4;     // 武器ID
+	optional int32 wing_id = 5;       // 翅膀ID
+	optional int32 blood = 6;         // 当前血量
+	optional int32 posY = 7;          // 1:上路；2:中路；3:下路
+	optional int32 camp_id = 8;       // 阵营id
+	optional int32 posX = 9;          // 横坐标位置:像素
+}
+
+// 玩家自身信息
+message sSelfInfo
+{
+	optional fixed32 player_id = 1;      // 角色id
+	optional string name = 2;          // 玩家名称
+	optional int32 rank = 3;           // 排名
+	optional int32 score = 4;          // 积分
+	optional int32 killed_times = 5;   // 杀人次数
+	optional int32 die_times = 6;      // 死亡次数d
+	optional int32 camp_id = 7;        // 阵营id
+	optional int32 ico_id = 8;         // 头像id 
+	repeated sReward reward_info = 9; // 奖励数组
+}
+
+// 对战信息
+message sCampInfo
+{
+	optional int32 camp_id = 1;          // 阵营id
+	optional int32 score = 2;            // 阵营积分	
+}
+
+// 奖励
+message sReward
+{
+	optional int32 tp = 1;          // 
+	optional int32 id = 2;          // 
+	optional int32 n =  3;          // 
+}
+
+// 技能
+message sSkillInfo
+{
+	optional int32 skill_id = 1;          // 技能id
+	optional int32 skill_times = 2;       // 技能可使用次数
+}
+
+// 请求活动的状态
+// id = 13101
+message c2s_camp_activity_status
+{
+}
+// 活动的状态通知
+// id = 13102
+message s2c_camp_activity_status
+{
+	optional int32 status = 1;         // 0:未开启;1:准备中;2:活动开始;3:活动进行中;4:活动结束
+}
+
+// 请求对战信息
+// id = 13103
+message c2s_camp_info
+{
+}
+// 响应对战信息
+// id = 13104
+message s2c_camp_info
+{
+	repeated sCampInfo camp_info = 1;     // 对战信息数组
+}
+
+// 请求战场信息(活动开启状态下点击进入页面)
+// id = 13105
+message c2s_get_battleground
+{
+}
+// id = 13106
+message s2c_get_battleground
+{
+	optional int32 less_time = 1;          // 倒计时：秒数(1800)
+	optional sSelfInfo  self_info= 2;     // 玩家自身信息
+	repeated sPlayerinfo player_info =3;  // 玩家信息数组
+}
+
+//选择路劲
+// id = 13107 
+message c2s_choose_path
+{
+	optional int32 path_id = 1;           // 1:上路；2:中路；3:下路
+}
+
+// 广播玩家出现通知
+// id = 13108
+message s2c_player_info
+{
+	optional sPlayerinfo player_info =1; // 玩家信息
+}
+
+// 玩家使用技能请求
+// id = 13109
+message c2s_get_battleground_skill
+{
+	optional int32 skill_id = 1;          // 技能ID
+}
+
+// 玩家使用技能响应
+// id = 13110
+message s2c_get_battleground_skill
+{
+	optional int32 result = 1;          // 1:成功;0:失败
+	optional fixed32 player_id = 2;       // 角色id
+	optional int32 skill_id = 3;        // 
+	optional fixed32 target = 4;          // 释放的目标角色id 
+}
+
+// 请求使用鼓舞
+// id = 13111
+message c2s_get_inspire
+{
+}
+// 响应使用鼓舞
+// id = 13112
+message s2c_get_inspire
+{
+	optional int32 result = 1;           // 增加的百分比(10)属性
+	optional sReward cost_info = 2;      // 鼓舞需要消耗 
+}
+
+// 阵营积分
+// id = 13114
+message s2c_camp_score_change
+{
+	optional int32 camp_id = 1;           // 阵营ID
+	optional int32 score = 2;             // 阵营积分
+}
+
+// 玩家信息变化通知
+// id = 13116
+message s2c_camp_playerinfo 
+{
+	optional sSelfInfo player_info = 1;  
+}
+
+// 战场积分最高的玩家信息通知
+// id = 13118
+message s2c_player_camp_score_change
+{
+	optional sSelfInfo info = 1;         // 
+}
+
+// 请求退出
+// id = 13119
+message c2s_get_exit_camp
+{
+}
+
+// 广播玩家退出
+// id = 13120
+message s2c_get_exit_camp
+{
+	optional fixed32 player_id = 1;          // 角色id
+	optional int32 is_killed = 2;            // 玩家是否被击杀0：没有击杀；1：击杀 
+}
+
+// 玩家技能数量变化通知
+// id = 13122
+message s2c_skill_times_change
+{
+	optional fixed32 player_id = 1;         // 角色id
+	repeated sSkillInfo skill_info = 2;            
+}
+
+// 积分获取变化广播
+// id = 13124
+message s2c_player_score_change
+{
+	optional fixed32 player_id = 1;         // 角色id
+	optional int32 score = 2;             // 积分
+	optional string name = 3;             // 玩家名称
+	optional int32 extra_score = 4;       // 额外积分
+	optional int32 score_type = 5;        // 额外积分类型：1:击杀;2:到达终点;3:连杀
+	optional fixed32 enemy_id = 6;          // 被技能砸中玩家
+	optional string enemy_name = 7;       // 被技能砸中玩家
+}
+
+// 请求验证到达
+// id = 13125
+message c2s_arrival_camp
+{
+}
+// 同步玩家位置
+// id = 13126
+message s2c_arrival_camp
+{
+	optional fixed32 player_id = 1;    // 角色id;
+	optional int32 posX = 2;         // 玩家未到达，同步玩家位置;
+}
+
+// 请求战斗
+// id = 13127
+message c2s_get_camp_player_fight
+{
+}
+// 玩家状态广播
+// id = 13128
+message s2c_camp_player_status
+{
+	optional fixed32 player_id = 1;         // 角色id
+	optional int32 status = 2;            // 1:前进中；2:开始战斗
+}
+
+// 发送胜利玩家剩余血量,此消息不回复
+// id = 13129
+message c2s_req_healthy
+{
+	optional int32 healthy = 1;	
+}
+
+// 签到协议开始
+// 获取本月签到信息
+// id = 13201
+message c2s_sign_in_info
+{
+	
+}
+
+// id = 13202
+message s2c_sign_in_info
+{
+	optional int32 signed_time = 1;		// 以签次数
+	optional int32 additional_time = 2; // 补签次数
+	optional int32 award_time = 3; 		// 奖励的领取次数
+}
+
+// 补签,没有签到的协议，上线自动签到
+// id = 13203
+message c2s_additional_sign_in
+{
+
+}
+
+// id = 13204
+message s2c_additional_sign_in
+{
+	
+}
+
+// 领取奖励
+// id = 13205
+message c2s_get_sign_in_award
+{
+	
+}
+
+// id = 13206
+message s2c_get_sign_in_award
+{
+	
+}
+// 签到协议结束13220（预留）
+
+
+// 成长基金（13221 - 13230）
+
+// 请求成长基金
+// id = 13221
+message c2s_grown_fund_info
+{
+}
+
+message mid_one_grown_fund
+{
+	optional int32 id		= 1;	//id
+	optional int32 flag		= 2;	//（0未领取 1已领取）
+}
+
+// 下发成长基金信息
+// id = 13222 
+message s2c_grown_fund_info
+{
+	optional int32				flag		= 1;	//0未购买 1已购买
+	repeated mid_one_grown_fund	grown_list	= 2;	//成长基金领取情况
+	optional int32 				buy_flag	= 3;	//是否在可购买的时间内（0不在 ，1在）
+}
+
+// 购买成长基金
+// id = 13223
+message c2s_grown_fund_buy
+{
+}
+
+// 领取成长基金
+// id = 13225
+message c2s_grown_fund_get
+{
+	optional int32 id = 1;	//要领取的id(从1开始)
+}
+
+// 成长基金（13221 - 13230）
+
+// 开服活动基础数据
+message sKFActivityBaseData
+{
+	optional int32 activity_id = 1;         // 活动id
+	optional int32 end_time = 2;			// 活动结束时间，服务器时间戳MiniTime（从2010-1-1 00:00:00 到现在的秒数）>0代表开启 <=0代表活动已结束 1代表永久开启
+	optional int32 state = 3;				// 活动状态 0未开启 1进行中 2已结束 3永久开启
+	optional string icon = 4;				// 前端要求添加
+	optional int32 icon_bg = 5;				// 前端要求添加
+	optional int32 sortid = 6;				// 策划要求添加
+	optional int32 show_time = 7;			// 活动显示结束时间，服务器时间戳MiniTime（从2010-1-1 00:00:00 到现在的秒数）>0代表开启 <=0代表活动已结束 1代表永久开启
+}
+
+// 获取开服活动信息
+// id = 13231
+message c2s_get_kfactivity_info
+{
+	optional int32 activity_id = 1;         	// 活动id(0代表取全部活动数据)
+}
+// 下发开服活动信息
+// id = 13232
+message s2c_get_kfactivity_info
+{
+	repeated sKFActivityBaseData infos	= 1;	// 活动列表
+}
+
+// 开服活动-统一协议（13231 - 13240）
+
+// 开服-等级活动（13241 - 13250）
+// 等级奖励信息的单个条目
+message sLevelActivityEntry
+{
+	repeated sCommonAward award = 1;	// 本条目的奖励
+	optional int32 level = 2;			// 领取条件等级
+	optional int32 is_get = 3;			// 是否领取，0表示未领取，非0表示领取
+}
+// 获取等级活动信息
+// id = 13241
+message c2s_level_activity_info
+{
+}
+// id = 13242
+message s2c_level_activity_info
+{
+	repeated sLevelActivityEntry info = 1;		// 已领取奖励的等级
+	optional int32 remain_seconds = 2;			// 活动结束剩余秒数
+}
+// id = 13243
+message c2s_get_level_activity_award
+{
+	optional int32 level = 1;		// 领取哪个等级的奖励	
+}
+// id = 13244
+message s2c_get_level_activity_award
+{
+}
+// 开服-等级活动（13241 - 13250）
+
+// 开服-每日累计充值活动（13251 - 13260）
+// 获取每日充值活动详情
+// id = 13251 
+message c2s_day_recharge_info
+{
+	optional int32 flag = 1; //(0获取数据 1获取数据和配置)
+}
+
+message mid_one_charge_get_flag
+{
+	optional int32 id 	= 1;
+	optional int32 flag	= 2;
+}
+
+message mid_one_recharge_config
+{
+	optional	int32			id 			= 1;
+	repeated	sCommonAward	reward_list	= 2;
+	optional	int32			price		= 3;
+}
+
+// 下发每日充值活动详情
+// id = 13252
+message s2c_day_recharge_info
+{
+	optional int32						re_t 		= 1;	// 活动的剩余时间
+	optional int32						gold		= 2;	// 累计充值的金额
+	repeated mid_one_charge_get_flag	get_list	= 3;	// 奖励领取情况
+	repeated mid_one_recharge_config	reward_list	= 4;	// 奖励详情
+}
+
+// 领取每日充值活动奖励
+// id = 13253
+message c2s_get_day_recharge_reward
+{
+	optional int32 id = 1;	//要领取的奖励id（从1开始）
+}
+// 开服-每日累计充值活动（13251 - 13260）
+
+// 开服-每日限购活动（13261 - 13270）
+// 获取限购活动配置
+// id = 13261 
+message c2s_get_limit_buy_config
+{
+	optional int32 open_days = 1;				// 开服第几天的（0就是今天的）
+}
+
+// 下发限购活动配置
+// id = 13262
+message s2c_get_limit_buy_config
+{
+	optional int32 open_days = 1;				// 开服第几天的
+	optional int32 total_days = 2;				// 总共有多少天
+	repeated sActivityOneConfig configs	= 3;	// 配置列表
+}
+// 获取限购活动状态
+// id = 13263
+message c2s_get_limit_buy_status
+{
+}
+// 下发限购活动状态
+// id = 13264
+message s2c_get_limit_buy_status
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+}
+// 限购活动-抢购
+// id = 13265
+message c2s_get_limit_buying
+{
+	optional int32 index = 1;			// 条目的索引
+}
+
+// 开服-每日限购活动（13261 - 13270）
+
+// 开服-超值礼包活动（13271 - 13280）
+// 获取超值礼包活动配置
+// id = 13271 
+message c2s_get_gifts_config
+{
+}
+// 下发超值礼包活动配置
+// id = 13272
+message s2c_get_gifts_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取超值礼包活动状态
+// id = 13273
+message c2s_get_gifts_status
+{
+}
+// 下发超值礼包活动状态
+// id = 13274
+message s2c_get_gifts_status
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+}
+// 超值礼包活动-购买
+// id = 13275
+message c2s_get_gifts_buying
+{
+	optional int32 index = 1;			// 条目的索引
+}
+// 开服-超值礼包活动（13271 - 13280）
+
+// 开服-冲榜活动（13281 - 13290）
+// 排行榜名次数据（1-3名）
+message sRankActorInfo
+{
+	optional int32 index = 1;         // 名次
+	optional string name = 2;         // 玩家名称
+	optional int32 icon = 3;     	  // 头像id
+	optional int32 level = 4;         // 等级
+	optional int32 model_id = 5;      // 模型id
+	optional int32 rank_value = 6;    // 排行的值
+}
+// 请求冲榜信息
+// id = 13281
+message c2s_rankactivity_info
+{
+}
+// 下发冲榜信息
+// id = 13282
+message s2c_rankactivity_info
+{
+	optional int32 rank_type = 1;         		// 排行榜类型 详见enum eRankType (为0代表无活动开启)
+	optional uint32 end_time = 2;				// 活动结束时间，MiniTime（从2010-1-1 00:00:00 到现在的秒数）
+	repeated sRankActorInfo	actor_infos	= 3;	// 排行榜玩家名次信息
+	optional int32 my_index = 4;         		// 我的名次（-1代表未上榜）
+}
+// 开服-冲榜活动（13281 - 13290）
+
+// 开服-累计充值活动（13291 - 13300）
+// 请求基础信息
+// id = 13291
+message c2s_totalrecharge_info
+{
+}
+// 下发基础信息
+// id = 13292
+message s2c_totalrecharge_info
+{
+	repeated sActivityOneStatus	status	= 1;		// 条目数据
+	optional int32 recharge = 2;         		// 已累计充值数
+}
+// 领取活动信息
+// id = 13293
+message c2s_get_totalrecharge_reward
+{
+	optional int32 index = 1;		// 要领取的条目id（从1开始）
+}
+// 请求活动配置
+// id = 13295
+message c2s_totalrecharge_config
+{
+}
+// 下发活动配置
+// id = 13296
+message s2c_totalrecharge_config
+{
+	repeated sActivityOneConfig	configs	= 1;		// 条目配置
+}
+// 开服-累计充值活动（13291 - 13300）
+
+// 开服-冲榜活动2（13301 - 13310）
+// 请求冲榜信息
+// id = 13301
+message c2s_rankactivity2_info
+{
+	optional int32 rank_type = 1;         		// 排行榜类型 详见enum eRankType
+}
+// 下发冲榜信息
+// id = 13302
+message s2c_rankactivity2_info
+{
+	optional int32 rank_type = 1;         		// 排行榜类型 详见enum eRankType
+	repeated sRankActorInfo	actor_infos	= 2;	// 排行榜玩家名次信息
+	optional int32 my_index = 3;         		// 我的名次（-1代表未上榜）
+	repeated int32 my_task_indexs = 4;         	// 我的任务状态列表 0未达成 1可领取 2已领取
+	optional int32 my_task_value = 5;         	// 我的任务进度
+	optional int32 include_rankinfo = 6;        // 是否包含排名信息 0不包含 1包含
+}
+// 获取活动配置
+// id = 13303 
+message c2s_rankactivity2_config
+{
+	optional int32 rank_type = 1;         		// 排行榜类型 详见enum eRankType
+}
+// 下发活动配置
+// id = 13304
+message s2c_rankactivity2_config
+{
+	optional int32 rank_type = 1;         		// 排行榜类型 详见enum eRankType
+	repeated sActivityOneConfig	configs	= 2;		// 条目配置
+	repeated sActivityOneConfig	task_configs= 3;	// 任务配置
+}
+// 领取任务奖励
+// id = 13305
+message c2s_rankactivity2_task_reward
+{
+	optional int32 rank_type = 1;         		// 排行榜类型 详见enum eRankType
+	optional int32 index = 2;					// 要领取的任务索引（从1开始）
+}
+// 开服-冲榜活动2（13301 - 13310）
+
+// 开服-冲榜成就（13311 - 13320）
+// 冲榜成就达成名单
+message sRankAchievementInfo
+{
+	optional int32 count = 1;		  // 达成几项
+	repeated string name = 2;         // 玩家名称
+}
+// 请求冲榜信息
+// id = 13311
+message c2s_rank_achievement_info
+{
+}
+// 下发冲榜信息
+// id = 13312
+message s2c_rank_achievement_info
+{
+	repeated sRankAchievementInfo	infos= 1;	// 达成玩家名单
+}
+// 获取活动配置
+// id = 13313 
+message c2s_rank_achievement_config
+{
+}
+// 下发活动配置
+// id = 13314
+message s2c_rank_achievement_config
+{
+	repeated sActivityOneConfig	configs	= 1;		// 条目配置
+}
+// 开服-冲榜成就（13311 - 13320）
+
+// 开服-累充成就（13321 - 13330）
+//请求累充成就数据
+// id = 13321
+message c2s_total_recharge_achievement
+{
+	optional int32 type = 1;	//type为1表示请求数据和配置（否则只发数据）
+}
+message mid_one_total_recharge_achievement
+{
+	//数据部分
+	optional int32 			id = 1;
+	optional int32 			flag = 2;	//是否已领奖过（1为已领取过）
+}
+message mid_one_total_recharge_achievement_config
+{
+	//配置部分
+	optional int32 			id 			= 1;
+	repeated sCommonAward	reward		= 2;	//奖励数组
+	optional int32			need_score	= 3;	//需要的进度（需要的充值天数）
+	optional int32			icon		= 4;	//icon
+}
+
+//下发累充成就数据
+// id = 13322
+message s2c_total_recharge_achievement
+{
+	optional int32 										round = 1;			//第几轮
+	optional int32 										score = 2;			//当前进度（充值天数）
+	
+	repeated mid_one_total_recharge_achievement			list = 3;			//奖励详情
+	repeated mid_one_total_recharge_achievement_config	config_list = 4;	//配置
+}
+// 领取累充成就奖励
+// id = 13323
+message c2s_total_recharge_achievement_receive
+{
+	optional int32 id = 1;
+}
+// 开服-累充成就（13321 - 13330）
+
+// 合服活动（14001 - 14200）
+/*
+-- 合服活动id
+HFActivityId = 
+{
+	HF_TREASURE_HUNT = 1,				-- 1寻宝
+	HF_CONSUME_RANK = 2,				-- 2消费排行
+	HF_LIMIT_BUY = 3,					-- 3限购
+	HF_POINTS = 4,						-- 4积分
+	HF_EXCHANGE = 5,					-- 5兑换
+	HF_LOGIN = 6,						-- 6登录
+	HF_RECHARGE_SINGLE = 7,				-- 7单次充值
+	HF_RECHARGE_DAYS = 8,				-- 8每日充值
+	HF_RECHARGE_TOTAL = 9,				-- 9累积充值
+}
+*/
+// 合服活动基础数据
+message sHFActivityBaseData
+{
+	optional int32 activity_id = 1;         // 活动id
+	optional int32 end_time = 2;			// 活动结束时间，服务器时间戳MiniTime（从2010-1-1 00:00:00 到现在的秒数）>0代表开启 <=0代表活动已结束 1代表永久开启
+	optional int32 state = 3;				// 活动状态 0未开启 1进行中 2已结束 3永久开启
+	optional string icon = 4;				// 前端要求添加
+	optional int32 sortid = 5;				// 策划要求添加
+}
+
+// 获取活动信息
+// id = 14001
+message c2s_hf_activity_info
+{
+	optional int32 activity_id = 1;         	// 活动id(0代表取全部活动数据)
+}
+// 下发活动信息
+// id = 14002
+message s2c_hf_activity_info
+{
+	repeated sHFActivityBaseData infos	= 1;	// 活动列表
+}
+
+// 1寻宝
+// 获取活动配置
+// id = 14011 
+message c2s_hf_treasurehunt_config
+{
+}
+// 下发活动配置
+// id = 14012
+message s2c_hf_treasurehunt_config
+{
+	repeated sCommonAward	configs1	= 1;		// 低级配置
+	repeated sCommonAward	configs2 	= 2;		// 高级配置
+	repeated sCommonAwardEx cost 		= 3;		// 消耗
+}
+// 请求寻宝
+// id = 14013
+message c2s_hf_treasurehunt
+{
+	optional int32 type = 1; 					// 寻宝类型 1一次 2十次
+}
+// 寻宝结果
+// id = 14014
+message s2c_hf_treasurehunt
+{
+	optional int32 type = 1; 					// 寻宝类型
+	repeated sCommonAwardEx awards = 2; 		// 获得的奖励
+}
+// 寻宝广播通知
+// id = 14016
+message s2c_hf_treasurehunt_broadcast
+{
+	optional sTreasureHuntBroadcast broadcasts = 1;	//  叠加在一起的多条广播消息
+}
+
+// 2消费排行
+// 获取活动配置
+// id = 14021 
+message c2s_hf_consumerank_config
+{
+}
+// 下发活动配置
+// id = 14022
+message s2c_hf_consumerank_config
+{
+	repeated sActivityOneConfig	configs	= 1;		// 条目配置
+	repeated sActivityOneConfig	task_configs= 2;	// 任务配置
+}
+// 请求活动信息
+// id = 14023
+message c2s_hf_consumerank_info
+{
+}
+// 下发活动信息
+// id = 14024
+message s2c_hf_consumerank_info
+{
+	repeated sRankActorInfo	actor_infos	= 1;	// 排行榜玩家名次信息
+	optional int32 my_index = 2;         		// 我的名次（-1代表未上榜）
+	repeated int32 my_task_indexs = 3;         	// 我的任务状态列表 0未达成 1可领取 2已领取
+	optional int32 my_task_value = 4;         	// 我的任务进度
+	optional int32 include_rankinfo = 5;        // 是否包含排名信息 0不包含 1包含
+}
+// 领取任务奖励
+// id = 14025
+message c2s_hf_consumerank_getreward
+{
+	optional int32 index = 1;					// 要领取的任务索引（从1开始）
+}
+
+// 3限购
+// 获取活动配置
+// id = 14031 
+message c2s_hf_limitbuy_config
+{
+}
+
+// 下发活动配置
+// id = 14032
+message s2c_hf_limitbuy_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14033
+message c2s_hf_limitbuy_info
+{
+}
+// 下发活动状态
+// id = 14034
+message s2c_hf_limitbuy_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+}
+// 限购活动-抢购
+// id = 14035
+message c2s_hf_limitbuying
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 4积分
+// 获取活动配置
+// id = 14041 
+message c2s_hf_points_config
+{
+}
+// 下发活动配置
+// id = 14042
+message s2c_hf_points_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14043
+message c2s_hf_points_info
+{
+}
+// 下发活动状态
+// id = 14044
+message s2c_hf_points_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+	optional int32 points = 2;					// 当前积分
+}
+// 领取奖励
+// id = 14045
+message c2s_hf_points_getreward
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 5兑换
+// 获取活动配置
+// id = 14051 
+message c2s_hf_exchange_config
+{
+}
+// 下发活动配置
+// id = 14052
+message s2c_hf_exchange_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14053
+message c2s_hf_exchange_info
+{
+}
+// 下发活动状态
+// id = 14054
+message s2c_hf_exchange_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+}
+// 兑换操作
+// id = 14055
+message c2s_hf_exchange_opt
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 6登录
+// 获取活动配置
+// id = 14061 
+message c2s_hf_login_config
+{
+}
+// 下发活动配置
+// id = 14062
+message s2c_hf_login_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14063
+message c2s_hf_login_info
+{
+}
+// 下发活动状态
+// id = 14064
+message s2c_hf_login_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+	optional int32 days = 2;					// 已登录的天数
+}
+// 领取奖励
+// id = 14065
+message c2s_hf_login_getreward
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 7单次充值
+// 获取活动配置
+// id = 14071 
+message c2s_hf_recharge_single_config
+{
+}
+// 下发活动配置
+// id = 14072
+message s2c_hf_recharge_single_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14073
+message c2s_hf_recharge_single_info
+{
+}
+// 下发活动状态
+// id = 14074
+message s2c_hf_recharge_single_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+}
+// 领取奖励
+// id = 14075
+message c2s_hf_recharge_single_getreward
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 8每日充值
+// 获取活动配置
+// id = 14081 
+message c2s_hf_recharge_days_config
+{
+}
+// 下发活动配置
+// id = 14082
+message s2c_hf_recharge_days_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14083
+message c2s_hf_recharge_days_info
+{
+}
+// 下发活动状态
+// id = 14084
+message s2c_hf_recharge_days_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+}
+// 领取奖励
+// id = 14085
+message c2s_hf_recharge_days_getreward
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 9累积充值
+// 获取活动配置
+// id = 14091 
+message c2s_hf_recharge_total_config
+{
+}
+// 下发活动配置
+// id = 14092
+message s2c_hf_recharge_total_config
+{
+	repeated sActivityOneConfig configs	= 1;	// 配置列表
+}
+// 获取活动状态
+// id = 14093
+message c2s_hf_recharge_total_info
+{
+}
+// 下发活动状态
+// id = 14094
+message s2c_hf_recharge_total_info
+{
+	repeated sActivityOneStatus status	= 1;	// 状态列表
+	optional int32 recharge = 2;				// 已累计充值数
+}
+// 领取奖励
+// id = 14095
+message c2s_hf_recharge_total_getreward
+{
+	optional int32 index = 1;					// 条目的索引
+}
+
+// 合服活动（14001 - 14200）
+
+
+// 玩吧分享活动(14201 - 14250)
+// 领取分享奖励,分享成功后请求
+// id = 14201
+message c2s_wanba_share
+{
+
+}
+
+// id = 14202
+message s2c_wanba_share
+{
+	optional int32 times = 1;           // 分享次数
+}
+
+// 领取邀请奖励、每次邀请成功后请求
+// id = 14203 
+message c2s_wanba_invite
+{
+	optional int32 type = 1;            // 类型，1:邀请、2:活跃
+	optional int32 index = 2;           // 档期、可选字段每次邀请成功后发送空请求、领取奖励时发送对应的index
+}
+
+// 活动档期数据
+message sWabaActivityStatus
+{
+	optional int32 index = 1;			// 索引
+	optional int32 status = 2;			// 状态（0未领取 1已领取）
+    optional int32 times = 3;          // 状态（达标人数 活跃使用）
+} 
+
+// id = 14204
+message s2c_wanba_invite
+{
+	optional int32 type = 1;            // 类型，1:邀请、2:活跃
+	optional int32 times = 2;           // 邀请人数
+	repeated sWabaActivityStatus status = 3; // 状态
+}
+
+// 上报成功邀请的玩家角色ID
+// id = 14205
+message c2s_wanba_invite_id
+{
+	optional fixed32 actor_id = 1;	// 角色id
+}
+
+// 玩吧分享活动(14201 - 14250)
+// 游戏服务器协议 - 常规系统 13001-15000
+
+
+// 游戏服务器协议 - 运营系统 15001-20000
+
+//package pb_gs_activity_yunying;
+
+// 活动条目基础数据 
+message sActivitItemBaseInfo
+{
+	optional int32 index = 1;				// 条目id
+	optional int32 state = 2;				// 领取状态 0未达成 1未领取 2已领取
+	optional int32 limits = 3;				// 剩余次数（-1代表无限制）
+}
+
+// 获取运营活动信息
+// id = 15001
+message c2s_get_activity_yy_info
+{
+	optional int32 activityid = 1;				// 活动id
+}
+// 下发运营活动信息
+// id = 15002
+message s2c_get_activity_yy_info
+{
+	optional int32 activityid = 1;				// 活动id
+	repeated sActivitItemBaseInfo items = 2;	// 条目列表数据
+	optional int32 curr_value = 3;				// 达成目标当前值
+}
+
+// 领取运营活动奖励
+// id = 15003
+message c2s_get_activity_yy_reward
+{
+	optional int32 activityid = 1;				// 活动id
+	optional int32 itemindex = 2;				// 条目索引 9类型传0
+}
+// 领取运营活动奖励结果
+// id = 15004
+message s2c_get_activity_yy_reward
+{
+	optional sint32 result = 1;					// 结果（成功时后面字段才有值）
+	optional int32 activityid = 2;				// 活动id
+	optional sActivitItemBaseInfo items = 3;	// 条目列表数据
+	optional sint32 hava_award = 4;				// 是否还有奖励未领取（0没有 1有）
+}
+
+// 更新某个活动奖励领取状态
+// id = 15006
+message s2c_update_activity_yy_reward
+{
+	optional int32 activityid = 1;				// 活动id
+	optional int32 showtype = 2;				// 活动显示类型
+}
+
+// 获取运营活动状态
+// id = 15007
+message c2s_get_activity_yy_status
+{
+}
+
+// 下发获取运营活动状态
+// id = 15008
+message s2c_get_activity_yy_status
+{
+	repeated int32 openids = 1;					// 当前开启的活动id列表（为空代表没有开启任何活动）
+	repeated int32 closeids = 2;				// 本次关闭的活动id列表
+}
+
+
+
+// 游戏服务器协议 - 护送飞艇 8301-8400
+
+//package pb_gs_escort_plane;
+
+//import "gs_common.proto";
+message sOnePlaneInfo
+{
+	optional fixed32 actor_id = 1;	// 护送玩家角色id,如果为0表示官方飞艇
+	optional string name = 2;		// 护送玩家名字
+	optional int32 power = 3;		// 护送玩家的战力
+	optional int32 loot_loss = 4;	// 飞艇被抢的损失
+	optional int32 end_seconds = 5;	// 还有多少秒结束护送
+	optional int32 track_number = 6;// 飞艇所在赛道的编号
+	optional int32 grade = 7;		// 飞艇的品质
+	optional int32 healthy = 8;		// 官方飞艇的血量百分比
+}
+
+// 获取飞艇的信息
+// id = 8301
+message c2s_plane_info
+{
+	
+}
+
+// id = 8302
+message s2c_plane_info
+{
+	repeated sOnePlaneInfo plane = 1;		// 当前护送的飞艇
+	optional sOnePlaneInfo my_plane = 2;	// 我的飞艇，如果为空，则表示没有开始护送
+	optional int32 escort_time = 3;			// 护送次数
+	optional int32 loot_time = 4;			// 抢夺次数
+	repeated sCommonAward award = 5;		// 护送奖励
+	repeated sCommonAward special_award= 6;	// 特殊奖励
+	optional int32 grade = 7;				// 如果还没开始护送，则表示飞艇的品质
+}
+
+// 随机飞艇品质
+// id = 8303 
+message c2s_rand_plane_grade
+{
+	
+}
+
+// id = 8304
+message s2c_rand_plane_grade
+{
+	optional int32 new_grade = 1;		// 随机后的飞机品质
+}
+
+// 开始护送飞艇
+// id = 8305
+message c2s_start_escort_plane
+{
+	
+}
+
+// id = 8306
+message s2c_start_escort_plane
+{
+	optional sOnePlaneInfo plane = 1;	// 飞艇的信息
+	repeated sCommonAward award = 2;	// 护送奖励
+	repeated sCommonAward special_award = 3;// 护送特殊奖励
+	optional int32 escort_time = 4;			// 剩余护送次数
+}
+
+// 领取飞艇奖励
+// id = 8307
+message c2s_get_escort_plane_award
+{
+	
+}
+
+// id = 8308
+message s2c_get_escort_plane_award
+{
+	repeated sCommonAward award = 1; 	// 获得的奖励
+	optional int32 plane_grade = 2;		// 下次护送飞艇的默认等级
+}
+
+// 使用加速道具
+// id = 8309
+message c2s_use_plane_speedup_item
+{
+	
+}
+
+// id = 8310
+message s2c_use_plane_speedup_item
+{
+	
+}
+
+// 使用闪电道具
+// id = 8311
+message c2s_escort_plane_use_thunder
+{
+	
+}
+
+// id = 8312
+message s2c_escort_plane_use_thunder
+{
+	repeated sCommonAward award = 1;	// 获得的奖励
+	optional int32 loot_time = 2;		// 当期掠夺次数
+}
+
+// 掠夺飞艇
+// id = 8313
+message c2s_loot_plane
+{
+	optional fixed32 actor_id = 1;		// 被抢夺玩家的角色id
+}
+
+// id = 8314
+message s2c_loot_plane
+{
+	optional int32 loot_time = 1;		// 剩余掠夺次数
+}
+
+message sEnemyLog
+{
+	optional int32 flag = 1;		// 日志标志1表示我抢赢别人，2表示别人抢赢我，3表示别人抢我输了
+	optional string name = 2;		// 敌人的名字
+	repeated sCommonAward loss = 3;// 损失
+	optional int32 guid = 4;	// 用来定位日志的唯一id
+	optional int32 power = 5;		// 战力
+	optional int32 icon = 6;		// 头像id
+}
+
+// 获取战报
+// id = 8315
+message c2s_escort_plane_enemy_log
+{
+	
+}
+
+// id = 8316
+message s2c_escort_plane_enemy_log
+{
+	repeated sEnemyLog log = 1;		// 日志，最多10条
+}
+
+// 复仇
+// id = 8317
+message c2s_escort_plane_revenge 
+{
+	optional int32 log_guid	= 1;	// 8315协议中日志数组的下标
+}
+
+// id = 8318
+message s2c_escort_plane_revenge
+{
+	
+}
+
+// 下发战斗中的角色信息
+// id = 8319
+message c2s_get_escort_plane_enemy
+{
+	
+}
+
+// id = 8320
+message s2c_get_escort_plane_enemy
+{
+	
+}
+
+// 请求掠夺玩家可获取的奖励
+// id = 8321
+message c2s_escort_plane_loot_award
+{
+	optional fixed32 actor_id = 1;		// 角色id
+}
+
+// id = 8322
+message s2c_escort_plane_loot_award
+{
+	repeated sCommonAward award = 1;		// 奖励
+}
+
+// 飞艇信息变化通知
+// id = 8324
+message s2c_plane_info_ntf
+{
+	optional fixed32 actor_id = 1;		// 角色id
+	optional int32 end_seconds = 2;		// 剩余秒数
+}
+
+// id = 8326
+message s2c_official_plane_info_ntf
+{
+	optional int32 is_new = 1;			// 是否新增，1表示新增，否则不是
+	optional sOnePlaneInfo plane = 2;	// 飞艇信息
+}
+
+// 被抢夺成功的通知
+// id = 8328
+message s2c_plane_escorted_ntf
+{
+	
+}
+
+// 游戏服务器协议 - 护送飞艇 8401-8500
+
+//package pb_gs_finger_guessing;
+
+//import "gs_common.proto";
+
+
+
+// 猜拳基础信息
+// id = 8401
+message c2s_finger_guessing_info
+{
+	
+}
+
+// id = 8402
+message s2c_finger_guessing_info
+{
+	optional int32 left_time = 1;	// 剩余参赛次数
+	optional int32 recover_seconds = 2;	// 恢复秒数
+}
+
+message sOneRival
+{
+	optional int32 icon = 1;	// 玩家头像
+	optional string name =2 ;	// 玩家名字
+	optional int32 power = 3;	// 战力
+	optional int32 vip_level = 4;// vip等级
+}
+
+// 猜拳匹配玩家
+// id = 8403
+message c2s_finger_guessing_match_player
+{
+	
+}
+
+// id = 8404
+message s2c_finger_guessing_match_player
+{
+	optional int32 is_robot = 1;		// 是否机器人, 0不是， 非0是
+	optional sOneRival rival = 2;		// 对手信息
+	optional int32 room_id = 3;			// 虚拟房间号
+	optional int32 left_time = 4;		// 游戏次数	
+	optional int32 recover_seconds = 5;	// 恢复秒数
+}
+
+// 回合开始
+// id = 8406
+message s2c_finger_guessing_round_start
+{
+	
+}
+
+// 改变猜拳的动作
+// id = 8407
+message c2s_change_finger
+{
+	optional int32 room_id		= 1;	// 虚拟房间号
+	optional int32 finger_type 	= 2;	// 出剪刀，石头，还是布
+}
+
+// id = 8408
+message s2c_change_finger
+{
+	
+}
+
+// 回和结束
+// id = 8410
+message s2c_finger_guessing_round_over
+{
+	optional int32 result = 1;		// 结果，1、输 2、赢 3、和
+	optional int32 my_finger = 2;	// 我的手势 （1、剪刀，2、石头，3、布）
+	optional int32 rival_finger = 3;// 对方的手势
+	optional int32 round_number = 4;// 回合数
+	optional int32 score = 5;		// 分数
+}
+
+// 游戏结束 
+// id = 8412
+message s2c_finger_guessing_game_over
+{
+	repeated sCommonAward award = 1;	// 结算奖励
+	optional int32 result = 2;			// 结果，1、输 2、赢 3、和
+}
+
+// 取消匹配
+// id = 8413
+message c2s_cancel_finger_guessing_match
+{
+	
+}
+
+// id = 8414
+message s2c_cancel_finger_guessing_match
+{
+	
+}
+
+// 退出游戏
+// id = 8415
+message c2s_exit_finger_guessing
+{
+	
+}
+
+// id = 8416
+message s2c_exit_finger_guessing
+{
+	
+}
+
+// 世界邀请
+// id = 8417
+message c2s_finger_guessing_invite
+{
+	
+}
+
+// id = 8418
+message s2c_finger_guessing_invite
+{
+	
+}
+
+// 接受邀请
+// id = 8419
+message c2s_accept_finger_guessing_invite
+{
+	optional int32 room_id = 1;		// 房间号
+}
+
+// id = 8420
+message s2c_accept_finger_guessing_invite
+{
+	
+}
+
+// 一键胜利
+// id = 8421
+message c2s_finger_guessing_onekey_victory
+{
+	
+}
+
+// id = 8422
+message s2c_finger_guessing_onekey_victory
+{
+	repeated sCommonAward award = 1;	// 结算奖励
+}
+
+// 迷惑
+// A发给B
+// id = 8423
+message c2s_finger_guessing_confusing
+{
+	optional int32 text_number = 1;		// 文本编号
+	optional int32 room_id = 2;			// 房间号
+}
+
+// B接收A
+// id = 8424
+message s2c_finger_guessing_confusing
+{
+	optional int32 text_number = 1;		// 文本编号
+}
+
+
+//import "gs_common.proto";
+
+//天下第一武道会 11001 - 11100
+//package pb_gs_top_arena;
+
+// 请求天下第一武道会信息
+// id=11001
+message c2s_top_arena_info
+{
+}
+
+// 下发天下第一武道会信息
+// id=11002
+message s2c_top_arena_info
+{
+	optional int32							top_num		= 1;	//第几期			
+	repeated sRankSingleInfo				rank_info	= 2;	//排名信息(没有就不发)
+	optional int32							start_t		= 3;	//剩余多少秒开启报名
+	optional int32							reset_t		= 4;	//剩余多少秒关闭报名(0表示不在报名时间内)
+	optional int32							total		= 5;	//已报名人数
+	optional int32							in_fight	= 6;	//值为1表示正处于战斗中
+	optional int32							score		= 7;	//玩家的积分
+	optional int32							last_rank	= 8;	//玩家第几轮退出活动
+	optional int32							attr_status	= 9;	//属性状态 0不可领取 1可领取 2已领取
+}
+
+// 报名参加天下第一武道会
+// id=11003
+message c2s_top_arena_sign
+{
+}
+
+// 报名参加天下第一武道会成功
+//id=11004
+message s2c_top_arena_success
+{
+}
+
+// 放弃参加天下第一武道会
+//id=11005
+message c2s_top_arena_cancel
+{
+}
+
+// 放弃参加天下第一武道会
+//id=11006
+message s2c_top_arena_cancel
+{
+}
+
+// 请求本周排名
+// id=11007
+message c2s_top_arena_rank
+{
+	optional uint32 start_rank	= 1;
+	optional uint32 end_rank	= 2;
+}
+
+message mid_one_top_arena_rank
+{
+	optional int32		rank_id			= 1;	//名次
+	optional fixed32	actorid			= 2;	//玩家id
+	optional string		actorname		= 3;	//玩家名字
+	optional int32		month_card		= 4;	//是否是月卡（不是为0）
+	optional int32		vip_level		= 5;	//vip等级
+	optional int32		icon_id			= 6;
+	optional int32		champion_num	= 7;	//冠军次数
+	optional int32		score			= 8;	//本周分数
+}
+
+// 下发本周排名
+// id=11008
+message s2c_top_arena_rank
+{
+	repeated mid_one_top_arena_rank	rank_list 			= 1;	//本期的排名信息(没有就不发)
+	optional mid_one_top_arena_rank	rank_last_champion	= 2;	//上期的冠军信息(没有就不发)
+	optional int32					rank_id				= 3;	//玩家自己的排名
+}
+
+// 请求发送霸主祝福
+// id=11009
+message c2s_top_arena_send_champion_bless
+{
+}
+
+// 请求上期比赛结果
+// id=11011
+message c2s_top_arena_last_fight_info
+{
+}
+
+message mid_top_arena_one_fight_info
+{
+	optional fixed32	actorid1		= 1;	//玩家1的id(如果没有就为无)
+	optional int32		fightvalue1		= 2;	//玩家1的战力
+	optional string		actorname1		= 3;	//玩家1的玩家名字
+	
+	optional fixed32	actorid2		= 4;	//玩家2的id(如果没有就为无)
+	optional int32		fightvalue2		= 5;	//玩家2的战力
+	optional string		actorname2		= 6;	//玩家2的玩家名字
+	
+	optional int32		win_flag		= 7;	//1表示玩家1胜利 2表示玩家2胜利(玩家1的id和玩家2的id都为0，那么这个字段不发)
+
+	optional int32		reason1			= 8;	//玩家1相关原因 0默认 1离线 2不在主城 3轮空
+	optional int32		reason2			= 9;	//玩家2相关原因 0默认 1离线 2不在主城 3轮空
+}
+
+//下发上期比赛结果
+// id=11012
+message s2c_top_arena_last_fight_info
+{
+	repeated mid_top_arena_one_fight_info fight_info1	= 1;	//八强对战情况
+	repeated mid_top_arena_one_fight_info fight_info2	= 2;	//四强对战情况
+	repeated mid_top_arena_one_fight_info fight_info3	= 3;	//冠军对战情况
+}
+
+//请求本期比赛结果
+// id=11013
+message c2s_top_arena_curr_fight_info
+{
+}
+
+//下发本期比赛结果
+// id=11014
+message s2c_top_arena_curr_fight_info
+{
+	optional int32							round		= 1;	//第几轮
+	repeated mid_top_arena_one_fight_info	fight_info	= 2;	//对战情况
+}
+
+// 下发天下第一武道会准备信息
+// id=11016
+message s2c_top_arena_read_info
+{
+	optional int32	person_num	= 1;	//参赛人数
+	optional int32	wait_t		= 2;	//倒计时
+	optional int32	round		= 3;	//即将开始的是第几轮
+	optional int32  reset_team	= 4;	//还有几组未结束战斗
+	optional int32	top_num		= 5;	//第几届天下第一武道会
+}
+
+//下发天下第一武道会匹配详情
+// id=11018
+message s2c_top_arena_match_info
+{
+	optional fixed32	actorid		= 1;	//玩家id(为0表示轮空，直接晋级，后面的字段都不会发)
+	optional string		actorname	= 2;	//玩家名字
+	optional int32		fightvalue	= 3;	//战力
+	optional int32		icon		= 4;
+	optional int32		round		= 5;	//第几轮
+	optional int32		top_index	= 6;	//第几期
+}
+
+//战斗结果
+//id= 11020
+message s2c_top_arena_fight_result
+{
+	optional fixed32	actorid		= 1;	//玩家id(为0表示轮空，直接晋级，后面的字段都不会发)
+	optional string		actorname	= 2;	//玩家名字
+	optional int32		fightvalue	= 3;	//战力
+	optional int32		icon		= 4;
+	
+	optional int32		round		= 5;	//当前是第几轮
+	optional int32		result		= 6;	//战斗结果（0输 1胜利）
+	optional int32		reason		= 7;	//结束原因（0:战斗结果 1:退出副本(含掉线)）
+}
+
+//请求对方的实体信息
+//id=11021
+message c2s_get_top_arena_enemy_entity_info
+{
+}
+
+// 天下第一武道会开启
+// id=11022
+message s2c_top_arena_begin
+{
+	optional int32							top_num		= 1;	//第几期			
+	repeated sRankSingleInfo				rank_info	= 2;	//排名信息(没有就不发)
+	optional int32							start_t		= 3;	//剩余多少秒开启报名
+	optional int32							reset_t		= 4;	//剩余多少秒关闭报名(0表示不在报名时间内)
+	optional int32							total		= 5;	//已报名人数
+}
+
+// 天下第一武道会关闭
+// id=11024
+message s2c_top_arena_end
+{
+}
+
+// 领取武道会属性
+// id=11025
+message c2s_get_top_arena_attr
+{
+}
+
+//天下第一武道会 11001 - 11100
+
+
+
+

@@ -1,0 +1,36 @@
+﻿{
+	"TowerFuben":
+	{
+		"fight_times":"3",
+		"free_reset_times":"1",
+		"reset_times":"1",
+		"reset_cost":{
+				"tp":"3",
+				"id":"3",
+				"n":"50"
+				},
+		"can_buy_times":"1",
+		"price":{
+				"tp":"3",
+				"id":"3",
+				"n":"50"
+				}
+	},
+	"TowerEliteFuben":
+	{
+		"fight_times":"3",
+		"can_buy_times":"2",
+		"price":{
+				"tp":"3",
+				"id":"3",
+				"n":"50"
+				}
+	},
+	"PetFuben":
+	{
+		"play_time":"1",
+		"treat":"5",
+		"MaxPage":"72",
+		"levelLimit":"60"
+	}
+}

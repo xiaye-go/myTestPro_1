@@ -1,0 +1,42 @@
+{
+	"initial": [
+		"libs/modules/egret/egret.js",
+		"libs/modules/egret/egret.web.js",
+		"libs/modules/eui/eui.js",
+		"libs/modules/res/res.js",
+		"libs/modules/tween/tween.js",
+		"libs/modules/game/game.js",
+		"libs/modules/dragonBones/dragonBones.js",
+		"promise/bin/promise.js"
+	],
+	"game": [
+		"bin-debug/core/BaseClass.js",
+		"bin-debug/core/mvc/c/BaseController.js",
+		"bin-debug/core/mvc/v/BaseEuiView.js",
+		"bin-debug/core/mvc/v/BaseLayer.js",
+		"bin-debug/core/mvc/v/BaseScene.js",
+		"bin-debug/core/mvc/v/SceneManager.js",
+		"bin-debug/Main.js",
+		"bin-debug/core/mvc/c/ControllerManager.js",
+		"bin-debug/core/mvc/m/BaseModel.js",
+		"bin-debug/ThemeAdapter.js",
+		"bin-debug/core/App.js",
+		"bin-debug/AssetAdapter.js",
+		"bin-debug/core/mvc/v/IBaseUi.js",
+		"bin-debug/core/mvc/v/LayerManager.js",
+		"bin-debug/LoadingUI.js",
+		"bin-debug/core/mvc/v/ViewManager.js",
+		"bin-debug/core/utils/ResourceUtils.js",
+		"bin-debug/core/utils/StageUtil.js",
+		"bin-debug/game/SkinPath.js",
+		"bin-debug/game/testClass.js",
+		"bin-debug/game/muduls/loading/LoadingConst.js",
+		"bin-debug/game/muduls/loading/LoadingController.js",
+		"bin-debug/game/muduls/loading/LoadingView.js",
+		"bin-debug/game/muduls/login/LoginConst.js",
+		"bin-debug/game/muduls/login/LoginController.js",
+		"bin-debug/game/muduls/login/LoginView.js",
+		"bin-debug/game/muduls/scene/LoginScene.js",
+		"bin-debug/game/muduls/scene/MainUiScene.js"
+	]
+}

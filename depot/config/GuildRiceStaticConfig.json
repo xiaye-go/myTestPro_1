@@ -1,0 +1,13 @@
+﻿{
+    "1":{
+        "MaxTransRiceTime":"2",
+        "MaxLootTime":"3",
+		"MaxLootedTime":"3",
+		"MaxRefreshTime":"3",
+        "RandomRiceCarCount":"20",
+		"RefreshWaitTime":"10",
+        "RiceCarProtectTime":"180",
+		"RefreshCost":"50",
+        "BuyOrangeCarCost":"600"
+    }
+}

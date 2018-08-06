@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<e:Skin class="LoadingSkin" width="760" height="1280" xmlns:e="http://ns.egret.com/eui">
+	<e:Group horizontalCenter="0" verticalCenter="0">
+		<e:Image source="loading_pre2_jpg" x="0" y="0"/>
+	</e:Group>
+</e:Skin>
